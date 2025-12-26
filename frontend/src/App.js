@@ -3,6 +3,7 @@ import "@/App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import axios from "axios";
 import { format, addDays } from "date-fns";
+import { nb } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -199,7 +200,7 @@ const BookingForm = () => {
           </div>
           
           <p className="text-zinc-400 text-center text-sm mb-4">
-            {selectedDate && format(selectedDate, "EEEE, MMMM d, yyyy")}
+            {selectedDate && format(selectedDate, "EEEE d. MMMM yyyy", { locale: nb })}
           </p>
 
           {loadingSlots ? (
@@ -243,7 +244,7 @@ const BookingForm = () => {
           <div className="bg-zinc-800/50 p-4 mb-6 border border-zinc-700">
             <div className="flex items-center gap-3 text-sm text-zinc-300">
               <CalendarIcon className="w-4 h-4 text-red-500" />
-              <span>{selectedDate && format(selectedDate, "d. MMMM yyyy")}</span>
+              <span>{selectedDate && format(selectedDate, "d. MMMM yyyy", { locale: nb })}</span>
               <Clock className="w-4 h-4 text-red-500 ml-4" />
               <span>{selectedTime}</span>
             </div>
@@ -327,7 +328,7 @@ const BookingForm = () => {
             </div>
             <div className="flex items-center gap-3 text-zinc-300">
               <CalendarIcon className="w-4 h-4 text-red-500" />
-              <span>{selectedDate && format(selectedDate, "EEEE d. MMMM yyyy")}</span>
+              <span>{selectedDate && format(selectedDate, "EEEE d. MMMM yyyy", { locale: nb })}</span>
             </div>
             <div className="flex items-center gap-3 text-zinc-300">
               <Clock className="w-4 h-4 text-red-500" />
