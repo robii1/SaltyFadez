@@ -1,15 +1,14 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
+from typing import List, Optional
 import uuid
-from datetime import datetime, timezone
-
+from datetime import datetime, timezone, timedelta
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -25,46 +24,172 @@ app = FastAPI()
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
-
 # Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
+class BookingCreate(BaseModel):
+    customer_name: str
+    phone: Optional[str] = None
+    email: Optional[EmailStr] = None
+    date: str  # Format: YYYY-MM-DD
+    time_slot: str  # Format: HH:MM
+
+class Booking(BaseModel):
+    model_config = ConfigDict(extra="ignore")
     
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    customer_name: str
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    date: str
+    time_slot: str
+    duration: int = 45  # minutes
+    status: str = "confirmed"
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
+class TimeSlot(BaseModel):
+    time: str
+    available: bool
 
-# Add your routes to the router instead of directly to app
+# Business hours configuration
+OPENING_HOUR = 9  # 9 AM
+CLOSING_HOUR = 18  # 6 PM
+SLOT_DURATION = 45  # minutes
+
+def generate_time_slots():
+    """Generate all possible time slots for a day"""
+    slots = []
+    current = datetime.strptime(f"{OPENING_HOUR}:00", "%H:%M")
+    end = datetime.strptime(f"{CLOSING_HOUR}:00", "%H:%M")
+    
+    while current < end:
+        slots.append(current.strftime("%H:%M"))
+        current += timedelta(minutes=SLOT_DURATION)
+    
+    return slots
+
+ALL_TIME_SLOTS = generate_time_slots()
+
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Barber Booking API"}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
+@api_router.get("/time-slots/{date}", response_model=List[TimeSlot])
+async def get_available_time_slots(date: str):
+    """Get available time slots for a specific date"""
+    # Get all bookings for the date
+    existing_bookings = await db.bookings.find(
+        {"date": date, "status": {"$ne": "cancelled"}},
+        {"_id": 0, "time_slot": 1}
+    ).to_list(100)
     
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
+    booked_times = {b["time_slot"] for b in existing_bookings}
     
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
+    # Check if date is in the past
+    try:
+        booking_date = datetime.strptime(date, "%Y-%m-%d").date()
+        today = datetime.now(timezone.utc).date()
+        
+        if booking_date < today:
+            # All slots unavailable for past dates
+            return [TimeSlot(time=slot, available=False) for slot in ALL_TIME_SLOTS]
+        
+        # For today, filter out past time slots
+        if booking_date == today:
+            current_time = datetime.now(timezone.utc).strftime("%H:%M")
+            return [
+                TimeSlot(
+                    time=slot, 
+                    available=slot not in booked_times and slot > current_time
+                ) 
+                for slot in ALL_TIME_SLOTS
+            ]
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+    
+    return [
+        TimeSlot(time=slot, available=slot not in booked_times) 
+        for slot in ALL_TIME_SLOTS
+    ]
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
+@api_router.post("/bookings", response_model=Booking)
+async def create_booking(booking_data: BookingCreate):
+    """Create a new booking"""
+    # Validate that at least phone or email is provided
+    if not booking_data.phone and not booking_data.email:
+        raise HTTPException(
+            status_code=400, 
+            detail="Please provide either phone number or email"
+        )
     
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
+    # Check if slot is already booked
+    existing = await db.bookings.find_one({
+        "date": booking_data.date,
+        "time_slot": booking_data.time_slot,
+        "status": {"$ne": "cancelled"}
+    })
     
-    return status_checks
+    if existing:
+        raise HTTPException(
+            status_code=400, 
+            detail="This time slot is already booked"
+        )
+    
+    # Validate date is not in the past
+    try:
+        booking_date = datetime.strptime(booking_data.date, "%Y-%m-%d").date()
+        today = datetime.now(timezone.utc).date()
+        
+        if booking_date < today:
+            raise HTTPException(
+                status_code=400, 
+                detail="Cannot book appointments in the past"
+            )
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+    
+    # Create booking
+    booking = Booking(
+        customer_name=booking_data.customer_name,
+        phone=booking_data.phone,
+        email=booking_data.email,
+        date=booking_data.date,
+        time_slot=booking_data.time_slot
+    )
+    
+    doc = booking.model_dump()
+    await db.bookings.insert_one(doc)
+    
+    return booking
+
+@api_router.get("/bookings", response_model=List[Booking])
+async def get_bookings(date: Optional[str] = None):
+    """Get all bookings, optionally filtered by date"""
+    query = {"status": {"$ne": "cancelled"}}
+    if date:
+        query["date"] = date
+    
+    bookings = await db.bookings.find(query, {"_id": 0}).to_list(1000)
+    return bookings
+
+@api_router.get("/bookings/{booking_id}", response_model=Booking)
+async def get_booking(booking_id: str):
+    """Get a specific booking by ID"""
+    booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    return booking
+
+@api_router.delete("/bookings/{booking_id}")
+async def cancel_booking(booking_id: str):
+    """Cancel a booking"""
+    result = await db.bookings.update_one(
+        {"id": booking_id},
+        {"$set": {"status": "cancelled"}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    return {"message": "Booking cancelled successfully"}
 
 # Include the router in the main app
 app.include_router(api_router)
