@@ -1,76 +1,64 @@
-# Sharp Cuts - Barber Booking Website PRD
+# Fresh Fade - Frisørbooking Nettside PRD
 
-## Original Problem Statement
-Build a barber website where you can book haircuts. Just haircuts for now, simple date/time selection, duration is about 30-45 min, guest booking with just phone number and/or email. Minimal design.
+## Opprinnelig Problemstilling
+Bygge en frisørnettside hvor man kan bestille klipp. Kun fade for nå, enkel dato/tidvalg, varighet ca 30-45 min, gjestebestilling med telefonnummer og/eller e-post. Minimalistisk design. Norsk språk med NOK valuta.
 
-## User Personas
-- **Primary**: Local customers looking to quickly book a haircut appointment
-- **Secondary**: Barbershop owner managing appointments
+## Brukerpersonas
+- **Primær**: Lokale kunder som vil bestille time raskt
+- **Sekundær**: Frisørsalongeier som administrerer bestillinger
 
-## Core Requirements
-- [x] Haircut booking with date/time selection
-- [x] 30-45 minute appointment slots
-- [x] Guest booking (no authentication required)
-- [x] Contact via phone number OR email
-- [x] Minimal, modern dark design
+## Kjernekrav
+- [x] Bestilling med dato/tid-valg
+- [x] 45-minutters tidslots
+- [x] Gjestebestilling (ingen innlogging)
+- [x] Kontakt via telefon ELLER e-post
+- [x] Minimalistisk, mørkt design
+- [x] Norsk språk
+- [x] Priser i NOK (300 kr for fade)
 
-## What's Been Implemented (December 26, 2025)
+## Implementert (26. desember 2025)
 
 ### Backend (FastAPI)
-- `POST /api/bookings` - Create new booking
-- `GET /api/bookings` - List all bookings (optional date filter)
-- `GET /api/bookings/{id}` - Get specific booking
-- `DELETE /api/bookings/{id}` - Cancel booking
-- `GET /api/time-slots/{date}` - Get available time slots for date
-- Business hours: 9 AM - 6 PM, 45-min slots
-- MongoDB storage for bookings
+- `POST /api/bookings` - Opprett bestilling
+- `GET /api/bookings` - Liste alle bestillinger
+- `GET /api/bookings/{id}` - Hent spesifikk bestilling
+- `DELETE /api/bookings/{id}` - Kanseller bestilling
+- `GET /api/time-slots/{date}` - Ledige tider for dato
+- Åpningstider: 9-18, 45-min slots
+- MongoDB lagring
 
 ### Frontend (React)
-- Hero section with "SHARP CUTS" branding
-- Services section (Classic Cut, Fade & Style, Beard Trim)
-- 4-step booking flow:
-  1. Select Date (Calendar)
-  2. Select Time (Available slots grid)
-  3. Enter Details (Name, Phone/Email)
-  4. Confirmation
-- Toast notifications for feedback
-- Mobile-responsive design
-- Dark theme with red accents (Swiss brutalist style)
+- Hero-seksjon med "FRESH FADE" branding
+- Tjenester: Fade (300 kr), Klassisk Klipp (250 kr), Skjegg Trim (150 kr)
+- 4-stegs bestillingsflyt:
+  1. Velg Dato (Kalender)
+  2. Velg Tid (Ledige tider)
+  3. Dine Detaljer (Navn, Telefon/E-post)
+  4. Bekreftelse
+- Toast-varsler for tilbakemelding
+- Mobilvennlig design
+- Mørkt tema med røde aksenter
 
-### Design System
-- Fonts: Anton (headings), Manrope (body)
-- Colors: Zinc-950 bg, Red-600 accent, Zinc-50 text
-- Sharp edges (rounded-none)
+### Designsystem
+- Fonter: Anton (overskrifter), Manrope (brødtekst)
+- Farger: Zinc-950 bg, Red-600 aksent, Zinc-50 tekst
+- Skarpe kanter (rounded-none)
 
-## Testing Results
-- Backend: 100% passed (16/16 tests)
-- Frontend: 95% passed (booking flow end-to-end)
+## Prioritert Backlog
 
-## Prioritized Backlog
+### P1 (Høy Prioritet)
+- [ ] E-post/SMS bekreftelse
+- [ ] Admin dashboard for bestillinger
+- [ ] Flere frisører
 
-### P0 (Critical) - DONE
-- [x] Basic booking functionality
-- [x] Date/time selection
-- [x] Guest booking form
+### P2 (Medium Prioritet)
+- [ ] Flere tjenester med ulike varigheter
+- [ ] Åpningstider-konfigurasjon
+- [ ] Blokkerte datoer/helligdager
+- [ ] Google Kalender integrasjon
 
-### P1 (High Priority)
-- [ ] Email/SMS confirmation notifications
-- [ ] Admin dashboard to view/manage bookings
-- [ ] Multiple barbers support
-
-### P2 (Medium Priority)
-- [ ] Multiple service types with different durations
-- [ ] Business hours configuration
-- [ ] Blocked dates/holidays support
-- [ ] Google Calendar integration
-
-### P3 (Nice to Have)
-- [ ] Customer reviews/testimonials
-- [ ] Gallery/portfolio section
-- [ ] Online payment option
-- [ ] Waitlist for fully booked days
-
-## Next Tasks
-1. Add email confirmation using SendGrid/Resend
-2. Build admin dashboard to manage appointments
-3. Add multiple barber support
+### P3 (Kjekt å ha)
+- [ ] Kundeanmeldelser
+- [ ] Galleri/portefølje
+- [ ] Online betaling (Vipps)
+- [ ] Venteliste for fullbookede dager
