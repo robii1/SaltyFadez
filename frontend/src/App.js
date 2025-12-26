@@ -364,11 +364,11 @@ const HeroSection = ({ onBookClick }) => (
     {/* Left: Text */}
     <div className="flex-1 flex flex-col justify-center p-6 md:p-12 lg:p-24">
       <h1 className="heading-font text-5xl sm:text-6xl lg:text-8xl text-zinc-50 mb-6">
-        SHARP<br />CUTS
+        FRESH<br />FADE
       </h1>
       <p className="text-zinc-400 text-base md:text-lg max-w-md mb-8">
-        Premium haircuts with precision and style. 
-        Book your appointment in seconds.
+        Premium fades med presisjon og stil. 
+        Bestill time på sekunder.
       </p>
       <div className="flex flex-col sm:flex-row gap-4">
         <Button 
@@ -377,13 +377,13 @@ const HeroSection = ({ onBookClick }) => (
           data-testid="book-now-btn"
         >
           <Scissors className="w-4 h-4 mr-2" />
-          BOOK NOW
+          BESTILL NÅ
         </Button>
         <Button 
           variant="outline"
           className="btn-sharp border-zinc-700 text-zinc-300 hover:bg-zinc-800"
         >
-          VIEW SERVICES
+          SE TJENESTER
         </Button>
       </div>
       
@@ -391,11 +391,11 @@ const HeroSection = ({ onBookClick }) => (
       <div className="flex flex-wrap gap-6 mt-12 text-zinc-400 text-sm">
         <div className="flex items-center gap-2">
           <Clock className="w-4 h-4 text-red-500" />
-          <span>Mon-Sat 9AM-6PM</span>
+          <span>Man-Lør 9-18</span>
         </div>
         <div className="flex items-center gap-2">
           <MapPin className="w-4 h-4 text-red-500" />
-          <span>123 Main Street</span>
+          <span>Storgata 123, Oslo</span>
         </div>
       </div>
     </div>
@@ -404,7 +404,7 @@ const HeroSection = ({ onBookClick }) => (
     <div className="flex-1 relative min-h-[50vh] lg:min-h-screen">
       <img
         src="https://images.unsplash.com/photo-1520338661084-680395057c93?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200"
-        alt="Barber focusing on a cut"
+        alt="Frisør i aksjon"
         className="absolute inset-0 w-full h-full object-cover"
       />
       <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/50 to-transparent lg:bg-gradient-to-l" />
@@ -416,13 +416,13 @@ const HeroSection = ({ onBookClick }) => (
 const ServicesSection = () => (
   <section className="py-16 md:py-24 px-6 md:px-12 lg:px-24 border-t border-zinc-800">
     <h2 className="heading-font text-3xl md:text-4xl text-zinc-50 mb-12 text-center">
-      OUR SERVICES
+      VÅRE TJENESTER
     </h2>
     <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
       {[
-        { name: "CLASSIC CUT", price: "$35", duration: "30-45 min", desc: "Traditional precision haircut" },
-        { name: "FADE & STYLE", price: "$45", duration: "45 min", desc: "Modern fade with styling" },
-        { name: "BEARD TRIM", price: "$20", duration: "20 min", desc: "Clean lines and shaping" }
+        { name: "FADE", price: "300 kr", duration: "45 min", desc: "Moderne fade med presisjon" },
+        { name: "KLASSISK KLIPP", price: "250 kr", duration: "30 min", desc: "Tradisjonell herreklipp" },
+        { name: "SKJEGG TRIM", price: "150 kr", duration: "20 min", desc: "Rene linjer og forming" }
       ].map((service) => (
         <div key={service.name} className="card-sharp group">
           <h3 className="heading-font text-xl text-zinc-50 mb-2">{service.name}</h3>
@@ -445,7 +445,7 @@ const BookingSection = ({ bookingRef }) => (
     className="py-16 md:py-24 px-6 md:px-12 lg:px-24 border-t border-zinc-800"
   >
     <h2 className="heading-font text-3xl md:text-4xl text-zinc-50 mb-12 text-center">
-      BOOK YOUR CUT
+      BESTILL TIME
     </h2>
     <BookingForm />
   </section>
@@ -465,7 +465,7 @@ const Home = () => {
       
       {/* Footer */}
       <footer className="py-8 px-6 border-t border-zinc-800 text-center text-zinc-500 text-sm">
-        <p>© 2025 Sharp Cuts. All rights reserved.</p>
+        <p>© 2025 Fresh Fade. Alle rettigheter reservert.</p>
       </footer>
       
       <Toaster position="top-center" />
