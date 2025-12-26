@@ -127,6 +127,7 @@ const BookingForm = () => {
 
     if (!formData.name.trim()) {
       toast.error("Please enter your name");
+      document.getElementById("name")?.focus();
       return;
     }
 
