@@ -1,0 +1,129 @@
+{
+  "identity": {
+    "name": "E1",
+    "role": "Anti-AI Designer",
+    "mission": "Create a sharp, swiss-brutalist barber booking experience that feels premium and precise."
+  },
+  "design_system": {
+    "theme_strategy": "dark_mode_default",
+    "typography": {
+      "font_family_heading": "Anton, sans-serif",
+      "font_family_body": "Manrope, sans-serif",
+      "import_url": "https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@300;400;500;600;700&display=swap",
+      "usage_rules": {
+        "headings": "Uppercase, tracking-wide, leading-none. Use for all section titles and hero text.",
+        "body": "Clean, high legibility. Use for forms and descriptions."
+      }
+    },
+    "colors": {
+      "palette": {
+        "background": "bg-zinc-950",
+        "foreground": "text-zinc-50",
+        "primary": "bg-red-600 hover:bg-red-700 text-white",
+        "secondary": "bg-zinc-800 hover:bg-zinc-700 text-zinc-100",
+        "accent": "text-red-500",
+        "border": "border-zinc-800",
+        "muted": "text-zinc-400"
+      },
+      "rules": [
+        "NO GRADIENTS. Flat, solid colors only.",
+        "High contrast is key. Black on White or White on Black.",
+        "Use Red (#DC2626) ONLY for primary actions (Book Now) and active states."
+      ]
+    },
+    "spacing": {
+      "container_padding": "p-6 md:p-12 lg:p-24",
+      "section_gap": "gap-12 md:gap-24",
+      "element_gap": "gap-4 md:gap-8"
+    },
+    "visual_enhancers": {
+      "radius": "rounded-none",
+      "borders": "border border-zinc-800",
+      "shadows": "none",
+      "textures": "Use a subtle noise texture overlay on the background if possible, otherwise stick to flat matte."
+    }
+  },
+  "components": {
+    "buttons": {
+      "style": "sharp-edged",
+      "classes": "rounded-none font-bold uppercase tracking-wider h-12 px-8 transition-transform active:scale-95"
+    },
+    "cards": {
+      "style": "outline",
+      "classes": "bg-transparent border border-zinc-800 p-6 hover:border-zinc-600 transition-colors rounded-none"
+    },
+    "inputs": {
+      "style": "minimal",
+      "classes": "bg-zinc-900 border-zinc-800 rounded-none focus:ring-1 focus:ring-red-500 focus:border-red-500 h-12"
+    },
+    "calendar": {
+      "style": "custom",
+      "instructions": "Customize Shadcn Calendar to match the dark theme. Selected date should be Red."
+    }
+  },
+  "layout_strategies": {
+    "landing_page": {
+      "type": "bento_grid",
+      "structure": [
+        "Hero Section: Split 60/40. Left: Big Text 'SHARP CUTS'. Right: Hero Image.",
+        "Services Grid: 3-column grid. Each service in a sharp card.",
+        "Booking Flow: Centered, focused container. No distractions."
+      ]
+    },
+    "booking_flow": {
+      "type": "step_wizard",
+      "steps": ["Select Service", "Select Date/Time", "Your Details", "Confirmation"],
+      "layout": "max-w-md mx-auto mt-12 p-6 border border-zinc-800 bg-zinc-900/50 backdrop-blur-sm"
+    }
+  },
+  "assets": {
+    "images": {
+      "hero_main": {
+        "url": "https://images.unsplash.com/photo-1520338661084-680395057c93?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Barber focusing on a cut",
+        "position": "Hero Right"
+      },
+      "interior_bg": {
+        "url": "https://images.unsplash.com/photo-1536520843734-bfb7a8a3ebcf?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Dark barber shop interior",
+        "position": "Section Background / About"
+      },
+      "tools_detail": {
+        "url": "https://images.unsplash.com/photo-1625038032200-648fbcd800d0?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Scissors and comb flat lay",
+        "position": "Services Section"
+      },
+      "action_shot": {
+        "url": "https://images.unsplash.com/photo-1543697506-6729425f7265?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Barber action shot",
+        "position": "Testimonials / Footer"
+      }
+    },
+    "icons": {
+      "library": "lucide-react",
+      "preferred": ["Scissors", "Calendar", "Clock", "MapPin", "Phone", "Check"]
+    }
+  },
+  "instructions_to_main_agent": [
+    "1. INSTALL FONTS: Add the Google Fonts import to index.css immediately.",
+    "2. CONFIGURE TAILWIND: Update tailwind.config.js to use the 'zinc' color palette and set borderRadius to '0px' (rounded-none) for that sharp look.",
+    "3. BUILD LAYOUT: Create the Landing Page using the Bento Grid strategy defined above.",
+    "4. BOOKING FORM: Implement the booking flow using Shadcn Form + Calendar. Keep it single-page application style (conditional rendering of steps).",
+    "5. NO AUTH: Do not build login screens. This is guest booking only.",
+    "6. MOBILE FIRST: Ensure the grid collapses to 1 column on mobile.",
+    "7. DATA-TESTID: Add data-testid to the 'Book Now' button, Date Picker, and Submit button."
+  ],
+  "universal_guidelines": {
+    "do_not": [
+      "Do not use rounded buttons.",
+      "Do not use gradients.",
+      "Do not use 'Inter' font.",
+      "Do not ask the user for clarification."
+    ],
+    "must_do": [
+      "Use 'Anton' for all headings.",
+      "Keep the design high-contrast.",
+      "Ensure the booking flow is frictionless."
+    ]
+  }
+}
