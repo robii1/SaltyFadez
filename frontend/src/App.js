@@ -17,10 +17,10 @@ const API = `${BACKEND_URL}/api`;
 // Step indicator component
 const StepIndicator = ({ currentStep }) => {
   const steps = [
-    { num: 1, label: "Date" },
-    { num: 2, label: "Time" },
-    { num: 3, label: "Details" },
-    { num: 4, label: "Done" }
+    { num: 1, label: "Dato" },
+    { num: 2, label: "Tid" },
+    { num: 3, label: "Info" },
+    { num: 4, label: "Ferdig" }
   ];
 
   return (
@@ -100,7 +100,7 @@ const BookingForm = () => {
       setTimeSlots(response.data);
     } catch (error) {
       console.error("Error fetching time slots:", error);
-      toast.error("Failed to load available times");
+      toast.error("Kunne ikke laste ledige tider");
     } finally {
       setLoadingSlots(false);
     }
@@ -121,12 +121,12 @@ const BookingForm = () => {
     e.preventDefault();
     
     if (!formData.phone && !formData.email) {
-      toast.error("Please provide either phone number or email");
+      toast.error("Vennligst oppgi telefon eller e-post");
       return;
     }
 
     if (!formData.name.trim()) {
-      toast.error("Please enter your name");
+      toast.error("Vennligst skriv inn navnet ditt");
       document.getElementById("name")?.focus();
       return;
     }
@@ -143,10 +143,10 @@ const BookingForm = () => {
       
       setBookingConfirmed(response.data);
       setStep(4);
-      toast.success("Booking confirmed!");
+      toast.success("Bestilling bekreftet!");
     } catch (error) {
       console.error("Error creating booking:", error);
-      toast.error(error.response?.data?.detail || "Failed to create booking");
+      toast.error(error.response?.data?.detail || "Kunne ikke opprette bestilling");
     } finally {
       setSubmitting(false);
     }
@@ -170,7 +170,7 @@ const BookingForm = () => {
       {/* Step 1: Select Date */}
       {step === 1 && (
         <div className="space-y-4">
-          <h3 className="heading-font text-xl text-center text-zinc-50 mb-6">SELECT DATE</h3>
+          <h3 className="heading-font text-xl text-center text-zinc-50 mb-6">VELG DATO</h3>
           <div className="flex justify-center">
             <Calendar
               mode="single"
@@ -192,9 +192,9 @@ const BookingForm = () => {
               onClick={() => setStep(1)}
               className="text-zinc-400 hover:text-white text-sm"
             >
-              ← Back
+              ← Tilbake
             </button>
-            <h3 className="heading-font text-xl text-zinc-50">SELECT TIME</h3>
+            <h3 className="heading-font text-xl text-zinc-50">VELG TID</h3>
             <div className="w-12"></div>
           </div>
           
@@ -203,7 +203,7 @@ const BookingForm = () => {
           </p>
 
           {loadingSlots ? (
-            <div className="text-center text-zinc-400 py-8">Loading available times...</div>
+            <div className="text-center text-zinc-400 py-8">Laster ledige tider...</div>
           ) : (
             <div className="time-slot-grid" data-testid="time-slots-grid">
               {timeSlots.map((slot) => (
@@ -220,7 +220,7 @@ const BookingForm = () => {
 
           {timeSlots.length > 0 && timeSlots.every(s => !s.available) && (
             <p className="text-zinc-500 text-center text-sm mt-4">
-              No available slots for this date. Please select another date.
+              Ingen ledige tider denne dagen. Vennligst velg en annen dato.
             </p>
           )}
         </div>
@@ -234,31 +234,31 @@ const BookingForm = () => {
               onClick={() => setStep(2)}
               className="text-zinc-400 hover:text-white text-sm"
             >
-              ← Back
+              ← Tilbake
             </button>
-            <h3 className="heading-font text-xl text-zinc-50">YOUR DETAILS</h3>
+            <h3 className="heading-font text-xl text-zinc-50">DINE DETALJER</h3>
             <div className="w-12"></div>
           </div>
 
           <div className="bg-zinc-800/50 p-4 mb-6 border border-zinc-700">
             <div className="flex items-center gap-3 text-sm text-zinc-300">
               <CalendarIcon className="w-4 h-4 text-red-500" />
-              <span>{selectedDate && format(selectedDate, "MMMM d, yyyy")}</span>
+              <span>{selectedDate && format(selectedDate, "d. MMMM yyyy")}</span>
               <Clock className="w-4 h-4 text-red-500 ml-4" />
               <span>{selectedTime}</span>
             </div>
-            <p className="text-zinc-500 text-xs mt-2">Duration: 45 min</p>
+            <p className="text-zinc-500 text-xs mt-2">Varighet: 45 min | Pris: 300 kr</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="name" className="text-zinc-300 text-sm">Name *</Label>
+              <Label htmlFor="name" className="text-zinc-300 text-sm">Navn *</Label>
               <Input
                 id="name"
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Your name"
+                placeholder="Ditt navn"
                 className="input-sharp mt-1"
                 required
                 data-testid="input-name"
@@ -268,14 +268,14 @@ const BookingForm = () => {
             <div>
               <Label htmlFor="phone" className="text-zinc-300 text-sm">
                 <Phone className="w-3 h-3 inline mr-1" />
-                Phone
+                Telefon
               </Label>
               <Input
                 id="phone"
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="(555) 123-4567"
+                placeholder="123 45 678"
                 className="input-sharp mt-1"
                 data-testid="input-phone"
               />
@@ -284,20 +284,20 @@ const BookingForm = () => {
             <div>
               <Label htmlFor="email" className="text-zinc-300 text-sm">
                 <Mail className="w-3 h-3 inline mr-1" />
-                Email
+                E-post
               </Label>
               <Input
                 id="email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="you@example.com"
+                placeholder="din@epost.no"
                 className="input-sharp mt-1"
                 data-testid="input-email"
               />
             </div>
 
-            <p className="text-zinc-500 text-xs">* Phone or email required for confirmation</p>
+            <p className="text-zinc-500 text-xs">* Telefon eller e-post kreves for bekreftelse</p>
 
             <Button
               type="submit"
@@ -305,7 +305,7 @@ const BookingForm = () => {
               className="w-full btn-sharp bg-red-600 hover:bg-red-700 text-white"
               data-testid="submit-booking-btn"
             >
-              {submitting ? "BOOKING..." : "CONFIRM BOOKING"}
+              {submitting ? "BOOKER..." : "BEKREFT BESTILLING"}
             </Button>
           </form>
         </div>
@@ -318,16 +318,16 @@ const BookingForm = () => {
             <Check className="w-8 h-8 text-white" />
           </div>
           
-          <h3 className="heading-font text-2xl text-zinc-50">BOOKING CONFIRMED</h3>
+          <h3 className="heading-font text-2xl text-zinc-50">BESTILLING BEKREFTET</h3>
           
           <div className="bg-zinc-800/50 p-6 border border-zinc-700 text-left space-y-3">
             <div className="flex items-center gap-3 text-zinc-300">
               <Scissors className="w-4 h-4 text-red-500" />
-              <span>Haircut (45 min)</span>
+              <span>Fade (45 min) — 300 kr</span>
             </div>
             <div className="flex items-center gap-3 text-zinc-300">
               <CalendarIcon className="w-4 h-4 text-red-500" />
-              <span>{selectedDate && format(selectedDate, "EEEE, MMMM d, yyyy")}</span>
+              <span>{selectedDate && format(selectedDate, "EEEE d. MMMM yyyy")}</span>
             </div>
             <div className="flex items-center gap-3 text-zinc-300">
               <Clock className="w-4 h-4 text-red-500" />
@@ -337,10 +337,10 @@ const BookingForm = () => {
 
           <p className="text-zinc-400 text-sm">
             {bookingConfirmed.email 
-              ? `Confirmation sent to ${bookingConfirmed.email}`
+              ? `Bekreftelse sendt til ${bookingConfirmed.email}`
               : bookingConfirmed.phone 
-              ? `We'll text you at ${bookingConfirmed.phone}`
-              : "See you soon!"
+              ? `Vi sender SMS til ${bookingConfirmed.phone}`
+              : "Vi sees!"
             }
           </p>
 
@@ -350,7 +350,7 @@ const BookingForm = () => {
             className="btn-sharp border-zinc-700 text-zinc-300 hover:bg-zinc-800"
             data-testid="book-another-btn"
           >
-            BOOK ANOTHER
+            BESTILL NY TIME
           </Button>
         </div>
       )}
