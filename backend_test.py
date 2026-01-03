@@ -278,6 +278,163 @@ class BarberAPITester:
         )
         return success
 
+    def test_admin_login_correct_password(self):
+        """Test admin login with correct password"""
+        login_data = {
+            "password": "saltyfadez2025"
+        }
+        
+        success, response = self.run_test(
+            "Admin Login - Correct Password",
+            "POST",
+            "admin/login",
+            200,
+            data=login_data
+        )
+        
+        if success and response:
+            try:
+                data = response.json()
+                if data.get('success') and data.get('message') == 'Innlogget':
+                    self.log_test("Admin Login Response Valid", True)
+                    return True
+                else:
+                    self.log_test("Admin Login Response Valid", False, f"Unexpected response: {data}")
+            except Exception as e:
+                self.log_test("Admin Login Response Parse", False, str(e))
+        
+        return success
+
+    def test_admin_login_wrong_password(self):
+        """Test admin login with wrong password"""
+        login_data = {
+            "password": "wrongpassword"
+        }
+        
+        success, response = self.run_test(
+            "Admin Login - Wrong Password",
+            "POST",
+            "admin/login",
+            401,
+            data=login_data
+        )
+        
+        if success and response:
+            try:
+                data = response.json()
+                if data.get('detail') == 'Feil passord':
+                    self.log_test("Admin Login Error Message Correct", True)
+                    return True
+                else:
+                    self.log_test("Admin Login Error Message Correct", False, f"Expected 'Feil passord', got: {data.get('detail')}")
+            except Exception as e:
+                self.log_test("Admin Login Error Parse", False, str(e))
+        
+        return success
+
+    def test_vipps_initiate_mock(self):
+        """Test Vipps payment initiation (should return mock response)"""
+        # First create a booking to get a valid booking ID
+        future_date = (datetime.now() + timedelta(days=4)).strftime("%Y-%m-%d")
+        booking_data = {
+            "customer_name": "Vipps Test Customer",
+            "phone": "555-999-9999",
+            "date": future_date,
+            "time_slot": "15:00"
+        }
+        
+        booking_success, booking_response = self.run_test(
+            "Create Booking for Vipps Test",
+            "POST",
+            "bookings",
+            200,
+            data=booking_data
+        )
+        
+        if booking_success and booking_response:
+            try:
+                booking_data_response = booking_response.json()
+                booking_id = booking_data_response.get('id')
+                
+                if booking_id:
+                    # Test Vipps payment initiation
+                    vipps_data = {
+                        "booking_id": booking_id,
+                        "amount": 300,
+                        "phone_number": "555-999-9999"
+                    }
+                    
+                    success, response = self.run_test(
+                        "Vipps Payment Initiate",
+                        "POST",
+                        "vipps/initiate",
+                        200,
+                        data=vipps_data
+                    )
+                    
+                    if success and response:
+                        try:
+                            data = response.json()
+                            # Should return mock response since VIPPS_CLIENT_ID is not set
+                            if data.get('status') == 'mock' and 'Vipps er ikke konfigurert' in data.get('message', ''):
+                                self.log_test("Vipps Mock Response Valid", True)
+                                return True
+                            else:
+                                self.log_test("Vipps Mock Response Valid", False, f"Unexpected response: {data}")
+                        except Exception as e:
+                            self.log_test("Vipps Response Parse", False, str(e))
+                    
+                    return success
+                else:
+                    self.log_test("Vipps Test - Booking ID", False, "No booking ID returned")
+            except Exception as e:
+                self.log_test("Vipps Test - Booking Parse", False, str(e))
+        
+        return False
+
+    def test_vipps_initiate_invalid_booking(self):
+        """Test Vipps payment with invalid booking ID"""
+        vipps_data = {
+            "booking_id": "invalid-booking-id",
+            "amount": 300
+        }
+        
+        success, response = self.run_test(
+            "Vipps Payment - Invalid Booking ID",
+            "POST",
+            "vipps/initiate",
+            404,
+            data=vipps_data
+        )
+        return success
+
+    def test_vipps_status_check(self):
+        """Test Vipps payment status check"""
+        # Use the booking ID from previous test if available
+        if hasattr(self, 'test_booking_id') and self.test_booking_id:
+            success, response = self.run_test(
+                "Vipps Payment Status Check",
+                "GET",
+                f"vipps/status/{self.test_booking_id}",
+                200
+            )
+            
+            if success and response:
+                try:
+                    data = response.json()
+                    if 'booking_id' in data and 'payment_status' in data:
+                        self.log_test("Vipps Status Response Valid", True)
+                        return True
+                    else:
+                        self.log_test("Vipps Status Response Valid", False, f"Missing fields in response: {data}")
+                except Exception as e:
+                    self.log_test("Vipps Status Parse", False, str(e))
+            
+            return success
+        else:
+            self.log_test("Vipps Status Check", False, "No test booking ID available")
+            return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🧪 Starting Barber API Tests...")
