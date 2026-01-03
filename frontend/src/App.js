@@ -16,6 +16,14 @@ import AdminPage from "@/AdminPage";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Services data
+const SERVICES = [
+  { id: "fade", name: "VANLIG KLIPP (FADE)", price: 300, duration: 45, desc: "Moderne fade med presisjon" },
+  { id: "skjegg", name: "SKJEGG TRIM", price: 150, duration: 20, desc: "Rene linjer og forming" },
+  { id: "fade-skjegg", name: "KLIPP OG SKJEGG", price: 400, duration: 60, desc: "Komplett pakke" },
+  { id: "dame", name: "DAMEKLIPP", price: 300, duration: 45, desc: "Styling og klipp" }
+];
+
 // Step indicator component
 const StepIndicator = ({ currentStep }) => {
   const steps = [
