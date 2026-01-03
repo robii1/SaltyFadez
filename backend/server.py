@@ -268,7 +268,11 @@ async def create_booking(booking_data: BookingCreate):
         phone=booking_data.phone,
         email=booking_data.email,
         date=booking_data.date,
-        time_slot=booking_data.time_slot
+        time_slot=booking_data.time_slot,
+        service_id=booking_data.service_id,
+        service_name=booking_data.service_name,
+        service_price=booking_data.service_price,
+        service_duration=booking_data.service_duration
     )
     
     doc = booking.model_dump()
