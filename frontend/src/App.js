@@ -489,6 +489,13 @@ const BookingSection = ({ selectedService, onServiceChange }) => (
 
 // Main Home component
 const Home = () => {
+  const [selectedService, setSelectedService] = useState(SERVICES[0].id);
+
+  const handleServiceSelect = (serviceId) => {
+    setSelectedService(serviceId);
+    document.getElementById("booking")?.scrollIntoView({ behavior: "smooth" });
+  };
+
   const scrollToBooking = () => {
     document.getElementById("booking")?.scrollIntoView({ behavior: "smooth" });
   };
@@ -496,8 +503,8 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-zinc-950 noise-overlay" data-testid="home-page">
       <HeroSection onBookClick={scrollToBooking} />
-      <ServicesSection />
-      <BookingSection />
+      <ServicesSection onServiceSelect={handleServiceSelect} />
+      <BookingSection selectedService={selectedService} onServiceChange={setSelectedService} />
       
       {/* Footer */}
       <footer className="py-8 px-6 border-t border-zinc-800">
