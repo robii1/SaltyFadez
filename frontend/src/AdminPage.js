@@ -4,6 +4,8 @@ import { format, parseISO } from "date-fns";
 import { nb } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { 
@@ -15,12 +17,94 @@ import {
   Trash2, 
   ArrowLeft,
   User,
-  RefreshCw
+  RefreshCw,
+  Lock,
+  CreditCard
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+
+// Login component
+const AdminLogin = ({ onLogin }) => {
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await axios.post(`${API}/admin/login`, { password });
+      if (response.data.success) {
+        localStorage.setItem("admin_authenticated", "true");
+        onLogin();
+      }
+    } catch (err) {
+      setError("Feil passord");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
+      <div className="w-full max-w-sm">
+        <div className="border border-zinc-800 bg-zinc-900/50 p-8">
+          <div className="text-center mb-8">
+            <div className="w-12 h-12 bg-red-600 mx-auto mb-4 flex items-center justify-center">
+              <Lock className="w-6 h-6 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-zinc-50" style={{ fontFamily: 'Anton, sans-serif' }}>
+              SALTY FADEZ
+            </h1>
+            <p className="text-zinc-500 text-sm mt-1">Admin</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="password" className="text-zinc-400 text-sm">Passord</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Skriv inn passord"
+                className="mt-1 bg-zinc-900 border-zinc-800 rounded-none h-12"
+                data-testid="admin-password-input"
+                autoFocus
+              />
+            </div>
+
+            {error && (
+              <p className="text-red-500 text-sm">{error}</p>
+            )}
+
+            <Button
+              type="submit"
+              disabled={loading || !password}
+              className="w-full rounded-none h-12 bg-red-600 hover:bg-red-700 text-white font-bold"
+              data-testid="admin-login-btn"
+            >
+              {loading ? "Logger inn..." : "LOGG INN"}
+            </Button>
+          </form>
+
+          <Link 
+            to="/" 
+            className="block text-center text-zinc-500 text-sm mt-6 hover:text-zinc-300"
+          >
+            ← Tilbake til forsiden
+          </Link>
+        </div>
+      </div>
+      <Toaster position="top-center" />
+    </div>
+  );
+};
 
 // Booking card component
 const BookingCard = ({ booking, onCancel }) => {
@@ -43,6 +127,17 @@ const BookingCard = ({ booking, onCancel }) => {
     }
   };
 
+  const getPaymentBadge = (status) => {
+    switch (status) {
+      case "paid":
+        return <span className="text-xs bg-green-600/20 text-green-400 px-2 py-0.5">Betalt</span>;
+      case "failed":
+        return <span className="text-xs bg-red-600/20 text-red-400 px-2 py-0.5">Feilet</span>;
+      default:
+        return <span className="text-xs bg-yellow-600/20 text-yellow-400 px-2 py-0.5">Venter</span>;
+    }
+  };
+
   return (
     <div className="border border-zinc-800 bg-zinc-900/50 p-4 hover:border-zinc-700 transition-colors">
       <div className="flex justify-between items-start">
@@ -50,6 +145,7 @@ const BookingCard = ({ booking, onCancel }) => {
           <div className="flex items-center gap-2 text-zinc-50">
             <User className="w-4 h-4 text-red-500" />
             <span className="font-semibold">{booking.customer_name}</span>
+            {getPaymentBadge(booking.payment_status)}
           </div>
           
           <div className="flex items-center gap-4 text-sm text-zinc-400">
@@ -94,13 +190,13 @@ const BookingCard = ({ booking, onCancel }) => {
   );
 };
 
-// Admin page component
-const AdminPage = () => {
+// Admin dashboard component
+const AdminDashboard = ({ onLogout }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [bookings, setBookings] = useState([]);
   const [allBookings, setAllBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState("date"); // "date" or "all"
+  const [viewMode, setViewMode] = useState("date");
 
   const fetchBookings = async (date) => {
     setLoading(true);
@@ -120,7 +216,6 @@ const AdminPage = () => {
     setLoading(true);
     try {
       const response = await axios.get(`${API}/bookings`);
-      // Sort by date and time
       const sorted = response.data.sort((a, b) => {
         const dateCompare = a.date.localeCompare(b.date);
         if (dateCompare !== 0) return dateCompare;
@@ -155,9 +250,13 @@ const AdminPage = () => {
     setAllBookings(allBookings.filter(b => b.id !== bookingId));
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("admin_authenticated");
+    onLogout();
+  };
+
   const displayBookings = viewMode === "date" ? bookings : allBookings;
 
-  // Group bookings by date for "all" view
   const groupedBookings = viewMode === "all" 
     ? displayBookings.reduce((acc, booking) => {
         if (!acc[booking.date]) acc[booking.date] = [];
@@ -166,8 +265,13 @@ const AdminPage = () => {
       }, {})
     : null;
 
+  // Calculate stats
+  const todayStr = format(new Date(), "yyyy-MM-dd");
+  const todayBookings = allBookings.filter(b => b.date === todayStr).length;
+  const totalRevenue = allBookings.filter(b => b.payment_status === "paid").length * 300;
+
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-50" data-testid="admin-page">
+    <div className="min-h-screen bg-zinc-950 text-zinc-50" data-testid="admin-dashboard">
       {/* Header */}
       <header className="border-b border-zinc-800 p-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
@@ -183,29 +287,62 @@ const AdminPage = () => {
               SALTY FADEZ ADMIN
             </h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Button
+                variant={viewMode === "date" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("date")}
+                className="rounded-none"
+              >
+                Per Dag
+              </Button>
+              <Button
+                variant={viewMode === "all" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("all")}
+                className="rounded-none"
+                data-testid="view-all-btn"
+              >
+                Alle
+              </Button>
+            </div>
             <Button
-              variant={viewMode === "date" ? "default" : "outline"}
+              variant="ghost"
               size="sm"
-              onClick={() => setViewMode("date")}
-              className="rounded-none"
+              onClick={handleLogout}
+              className="text-zinc-500 hover:text-white"
+              data-testid="logout-btn"
             >
-              Per Dag
-            </Button>
-            <Button
-              variant={viewMode === "all" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setViewMode("all")}
-              className="rounded-none"
-              data-testid="view-all-btn"
-            >
-              Alle
+              Logg ut
             </Button>
           </div>
         </div>
       </header>
 
       <div className="max-w-6xl mx-auto p-6">
+        {/* Stats cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="border border-zinc-800 p-4">
+            <p className="text-zinc-500 text-xs uppercase tracking-wider">I dag</p>
+            <p className="text-2xl font-bold text-zinc-50">{todayBookings}</p>
+          </div>
+          <div className="border border-zinc-800 p-4">
+            <p className="text-zinc-500 text-xs uppercase tracking-wider">Totalt aktive</p>
+            <p className="text-2xl font-bold text-zinc-50">{allBookings.length}</p>
+          </div>
+          <div className="border border-zinc-800 p-4">
+            <p className="text-zinc-500 text-xs uppercase tracking-wider">Betalt</p>
+            <p className="text-2xl font-bold text-green-500">{totalRevenue} kr</p>
+          </div>
+          <div className="border border-zinc-800 p-4">
+            <p className="text-zinc-500 text-xs uppercase tracking-wider">Venter betaling</p>
+            <p className="text-2xl font-bold text-yellow-500">
+              {allBookings.filter(b => b.payment_status !== "paid").length * 300} kr
+            </p>
+          </div>
+        </div>
+
         <div className="grid lg:grid-cols-[300px_1fr] gap-8">
           {/* Calendar sidebar */}
           <div className="space-y-4">
@@ -294,6 +431,25 @@ const AdminPage = () => {
       <Toaster position="top-center" />
     </div>
   );
+};
+
+// Admin page wrapper
+const AdminPage = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    // Check if already logged in
+    const auth = localStorage.getItem("admin_authenticated");
+    if (auth === "true") {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  if (!isAuthenticated) {
+    return <AdminLogin onLogin={() => setIsAuthenticated(true)} />;
+  }
+
+  return <AdminDashboard onLogout={() => setIsAuthenticated(false)} />;
 };
 
 export default AdminPage;
