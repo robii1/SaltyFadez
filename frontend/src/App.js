@@ -408,7 +408,7 @@ const HeroSection = ({ onBookClick }) => (
     {/* Right: Image */}
     <div className="flex-1 relative min-h-[50vh] lg:min-h-screen">
       <img
-        src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200"
+        src="https://images.unsplash.com/photo-1543697506-6729425f7265?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200"
         alt="Frisør i aksjon"
         className="absolute inset-0 w-full h-full object-cover"
       />
