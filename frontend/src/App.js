@@ -272,7 +272,9 @@ const BookingForm = ({ selectedService, onServiceChange }) => {
               <Clock className="w-4 h-4 text-red-500 ml-4" />
               <span>{selectedTime}</span>
             </div>
-            <p className="text-zinc-500 text-xs mt-2">Varighet: 45 min | Pris: 300 kr</p>
+            <p className="text-zinc-500 text-xs mt-2">
+              {service.name} ({service.duration} min) | Pris: {service.price} kr
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
