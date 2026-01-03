@@ -444,6 +444,10 @@ class BarberAPITester:
         # Test API connectivity
         self.test_api_root()
         
+        # Test admin authentication
+        self.test_admin_login_correct_password()
+        self.test_admin_login_wrong_password()
+        
         # Test time slots endpoints
         self.test_get_time_slots_future_date()
         self.test_get_time_slots_past_date()
@@ -459,6 +463,11 @@ class BarberAPITester:
         self.test_get_bookings()
         self.test_get_booking_by_id()
         self.test_get_booking_invalid_id()
+        
+        # Test Vipps payment integration
+        self.test_vipps_initiate_mock()
+        self.test_vipps_initiate_invalid_booking()
+        self.test_vipps_status_check()
 
         # Print summary
         print("=" * 50)
