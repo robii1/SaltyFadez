@@ -444,25 +444,31 @@ const HeroSection = ({ onBookClick }) => (
 );
 
 // Services section
-const ServicesSection = () => (
+const ServicesSection = ({ onServiceSelect }) => (
   <section className="py-16 md:py-24 px-6 md:px-12 lg:px-24 border-t border-zinc-800">
     <h2 className="heading-font text-3xl md:text-4xl text-zinc-50 mb-12 text-center">
       VÅRE TJENESTER
     </h2>
-    <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-      {[
-        { name: "FADE", price: "300 kr", duration: "45 min", desc: "Moderne fade med presisjon" },
-        { name: "KLASSISK KLIPP", price: "250 kr", duration: "30 min", desc: "Tradisjonell herreklipp" },
-        { name: "SKJEGG TRIM", price: "150 kr", duration: "20 min", desc: "Rene linjer og forming" }
-      ].map((service) => (
-        <div key={service.name} className="card-sharp group">
-          <h3 className="heading-font text-xl text-zinc-50 mb-2">{service.name}</h3>
+    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+      {SERVICES.map((service) => (
+        <button
+          key={service.id}
+          onClick={() => onServiceSelect(service.id)}
+          className="card-sharp group text-left hover:border-red-600 transition-colors cursor-pointer"
+          data-testid={`service-${service.id}`}
+        >
+          <h3 className="heading-font text-lg text-zinc-50 mb-2">{service.name}</h3>
           <p className="text-zinc-400 text-sm mb-4">{service.desc}</p>
           <div className="flex justify-between items-center">
-            <span className="text-red-500 font-bold text-lg">{service.price}</span>
-            <span className="text-zinc-500 text-sm">{service.duration}</span>
+            <span className="text-red-500 font-bold text-lg">{service.price} kr</span>
+            <span className="text-zinc-500 text-sm">{service.duration} min</span>
           </div>
-        </div>
+          <div className="mt-4 text-center">
+            <span className="text-xs uppercase tracking-wider text-zinc-600 group-hover:text-red-500 transition-colors">
+              Velg & bestill →
+            </span>
+          </div>
+        </button>
       ))}
     </div>
   </section>
