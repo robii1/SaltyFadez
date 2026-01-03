@@ -52,6 +52,10 @@ class BookingCreate(BaseModel):
     email: Optional[EmailStr] = None
     date: str  # Format: YYYY-MM-DD
     time_slot: str  # Format: HH:MM
+    service_id: Optional[str] = "fade"
+    service_name: Optional[str] = "VANLIG KLIPP (FADE)"
+    service_price: Optional[int] = 300
+    service_duration: Optional[int] = 45
 
 class Booking(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -62,7 +66,10 @@ class Booking(BaseModel):
     email: Optional[str] = None
     date: str
     time_slot: str
-    duration: int = 45  # minutes
+    service_id: str = "fade"
+    service_name: str = "VANLIG KLIPP (FADE)"
+    service_price: int = 300
+    service_duration: int = 45
     status: str = "confirmed"
     payment_status: str = "pending"  # pending, paid, failed
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
