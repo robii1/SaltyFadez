@@ -531,6 +531,7 @@ const Home = () => {
     <div className="min-h-screen bg-zinc-950 noise-overlay" data-testid="home-page">
       <HeroSection onBookClick={scrollToBooking} />
       <ServicesSection />
+      <TikTokSection />
       <BookingSection />
       
       {/* Footer */}
