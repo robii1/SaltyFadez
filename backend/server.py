@@ -134,10 +134,10 @@ async def send_booking_confirmation_email(booking: Booking):
             <p style="color: #a1a1aa; margin-bottom: 30px;">Din time er bekreftet. Her er detaljene:</p>
             
             <div style="background-color: #27272a; padding: 20px; margin-bottom: 20px;">
-                <p style="margin: 0 0 10px 0; color: #fafafa;"><strong>Tjeneste:</strong> Fade (45 min)</p>
+                <p style="margin: 0 0 10px 0; color: #fafafa;"><strong>Tjeneste:</strong> {booking.service_name} ({booking.service_duration} min)</p>
                 <p style="margin: 0 0 10px 0; color: #fafafa;"><strong>Dato:</strong> {formatted_date}</p>
                 <p style="margin: 0 0 10px 0; color: #fafafa;"><strong>Tid:</strong> {booking.time_slot}</p>
-                <p style="margin: 0; color: #dc2626;"><strong>Pris:</strong> 300 kr</p>
+                <p style="margin: 0; color: #dc2626;"><strong>Pris:</strong> {booking.service_price} kr</p>
             </div>
             
             <div style="background-color: #27272a; padding: 20px; margin-bottom: 20px;">
