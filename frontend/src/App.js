@@ -475,16 +475,15 @@ const ServicesSection = ({ onServiceSelect }) => (
 );
 
 // Booking section
-const BookingSection = ({ bookingRef }) => (
+const BookingSection = ({ selectedService, onServiceChange }) => (
   <section 
-    ref={bookingRef}
     id="booking"
     className="py-16 md:py-24 px-6 md:px-12 lg:px-24 border-t border-zinc-800"
   >
     <h2 className="heading-font text-3xl md:text-4xl text-zinc-50 mb-12 text-center">
       BESTILL TIME
     </h2>
-    <BookingForm />
+    <BookingForm selectedService={selectedService} onServiceChange={onServiceChange} />
   </section>
 );
 
