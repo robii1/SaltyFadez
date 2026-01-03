@@ -443,6 +443,70 @@ const ServicesSection = () => (
   </section>
 );
 
+// TikTok embed section
+const TikTokSection = () => (
+  <section className="py-16 md:py-24 px-6 md:px-12 lg:px-24 border-t border-zinc-800">
+    <h2 className="heading-font text-3xl md:text-4xl text-zinc-50 mb-4 text-center">
+      FØLG OSS PÅ TIKTOK
+    </h2>
+    <p className="text-zinc-400 text-center mb-8">
+      <a 
+        href="https://www.tiktok.com/@salty_fadez" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="hover:text-red-500 transition-colors"
+      >
+        @salty_fadez
+      </a>
+    </p>
+    
+    <div className="max-w-4xl mx-auto">
+      {/* TikTok Embed Grid */}
+      <div className="grid md:grid-cols-3 gap-4">
+        {/* TikTok Video Placeholders - will show actual videos when embedded */}
+        {[1, 2, 3].map((i) => (
+          <div 
+            key={i}
+            className="aspect-[9/16] bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-center relative overflow-hidden group"
+          >
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
+              <svg className="w-12 h-12 text-zinc-700 mb-3" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+              </svg>
+              <p className="text-zinc-500 text-sm text-center">Video {i}</p>
+            </div>
+            {/* Hover overlay */}
+            <a 
+              href="https://www.tiktok.com/@salty_fadez"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute inset-0 bg-red-600/0 group-hover:bg-red-600/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100"
+            >
+              <span className="text-white font-bold text-sm">SE PÅ TIKTOK</span>
+            </a>
+          </div>
+        ))}
+      </div>
+      
+      {/* CTA Button */}
+      <div className="text-center mt-8">
+        <a 
+          href="https://www.tiktok.com/@salty_fadez"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-50 font-bold uppercase tracking-wider transition-colors"
+          data-testid="tiktok-cta-btn"
+        >
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+          </svg>
+          Følg @salty_fadez
+        </a>
+      </div>
+    </div>
+  </section>
+);
+
 // Booking section
 const BookingSection = ({ bookingRef }) => (
   <section 
