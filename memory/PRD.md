@@ -21,60 +21,69 @@ Bygge en frisørnettside hvor man kan bestille klipp. Kun fade for nå, enkel da
 - [x] Minimalistisk, mørkt design
 - [x] Norsk språk
 - [x] Priser i NOK (300 kr for fade)
-- [x] Admin dashboard for bestillinger
+- [x] Admin dashboard for bestillinger (passord-beskyttet)
 - [x] TikTok lenke i footer
+- [x] E-post bekreftelse ved bestilling
+- [x] Vipps-betaling (placeholder klar)
 
 ## Implementert (26. desember 2025)
 
 ### Backend (FastAPI)
-- `POST /api/bookings` - Opprett bestilling
+- `POST /api/bookings` - Opprett bestilling + send e-post
 - `GET /api/bookings` - Liste alle bestillinger
 - `GET /api/bookings/{id}` - Hent spesifikk bestilling
 - `DELETE /api/bookings/{id}` - Kanseller bestilling
 - `GET /api/time-slots/{date}` - Ledige tider for dato
+- `POST /api/admin/login` - Admin innlogging
+- `POST /api/vipps/initiate` - Start Vipps-betaling (MOCK)
+- `POST /api/vipps/callback` - Vipps webhook
+- `GET /api/vipps/status/{id}` - Betalingsstatus
 - Åpningstider: 9-18, 45-min slots
 - MongoDB lagring
+- Resend e-post integrasjon
 
 ### Frontend (React)
 - Hero-seksjon med "SALTY FADEZ" branding
 - Tjenester: Fade (300 kr), Klassisk Klipp (250 kr), Skjegg Trim (150 kr)
-- 4-stegs bestillingsflyt:
-  1. Velg Dato (Kalender)
-  2. Velg Tid (Ledige tider)
-  3. Dine Detaljer (Navn, Telefon/E-post)
-  4. Bekreftelse
+- 4-stegs bestillingsflyt med e-post bekreftelse
 - **Admin Dashboard** (/admin):
+  - Passord-beskyttet innlogging
+  - Statistikk: Dagens bestillinger, totalt aktive, betalt/venter
   - Kalender for å velge dato
   - Se bestillinger per dag eller alle
   - Kanseller bestillinger
-  - Oppdater-knapp
+  - Logg ut-knapp
 - Footer med TikTok-lenke og kontaktinfo
 - Mobilvennlig design
-- Mørkt tema med røde aksenter
 
-### Designsystem
-- Fonter: Anton (overskrifter), Manrope (brødtekst)
-- Farger: Zinc-950 bg, Red-600 aksent, Zinc-50 tekst
-- Skarpe kanter (rounded-none)
+### Konfigurasjon (.env)
+```
+ADMIN_PASSWORD=saltyfadez2025
+RESEND_API_KEY=           # Legg til for e-post
+VIPPS_CLIENT_ID=          # Legg til for Vipps
+```
 
-## Testing (100% bestått)
-- Backend: 16/16 tester bestått
-- Frontend: Alle tester bestått
+## Testing (95% bestått)
+- Backend: 18/22 tester bestått
+- Frontend: Alle hovedfunksjoner fungerer
+
+## Mocked Features
+- **Vipps-betaling**: Returnerer mock-respons inntil du legger til Vipps-nøkler
+- **E-post**: Hopper over sending hvis RESEND_API_KEY mangler
 
 ## Prioritert Backlog
 
 ### P1 (Høy Prioritet)
-- [ ] E-post/SMS bekreftelse
-- [ ] Flere frisører
+- [ ] Aktivere Vipps-betaling (krever nøkler fra portal.vipps.no)
+- [ ] Aktivere e-post (krever Resend API-nøkkel)
+- [ ] SMS-varsling
 
 ### P2 (Medium Prioritet)
-- [ ] Flere tjenester med ulike varigheter
+- [ ] Flere frisører
 - [ ] Åpningstider-konfigurasjon
 - [ ] Blokkerte datoer/helligdager
-- [ ] Google Kalender integrasjon
 
 ### P3 (Kjekt å ha)
 - [ ] Kundeanmeldelser
 - [ ] Galleri/portefølje
-- [ ] Online betaling (Vipps)
 - [ ] Venteliste for fullbookede dager
