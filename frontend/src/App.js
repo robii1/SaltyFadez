@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import axios from "axios";
 import { format, addDays } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { Scissors, Calendar as CalendarIcon, Clock, Phone, Mail, Check, MapPin } from "lucide-react";
+import { Scissors, Calendar as CalendarIcon, Clock, Phone, Mail, Check, MapPin, Settings } from "lucide-react";
+import AdminPage from "@/AdminPage";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -492,6 +493,13 @@ const Home = () => {
               <Phone className="w-4 h-4" />
               <span className="text-sm">453 92 948</span>
             </a>
+            <Link 
+              to="/admin" 
+              className="text-zinc-600 hover:text-zinc-400 transition-colors"
+              data-testid="admin-link"
+            >
+              <Settings className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       </footer>
@@ -507,6 +515,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </BrowserRouter>
     </div>
