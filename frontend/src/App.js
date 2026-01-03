@@ -350,7 +350,7 @@ const BookingForm = ({ selectedService, onServiceChange }) => {
           <div className="bg-zinc-800/50 p-6 border border-zinc-700 text-left space-y-3">
             <div className="flex items-center gap-3 text-zinc-300">
               <Scissors className="w-4 h-4 text-red-500" />
-              <span>Fade (45 min) — 300 kr</span>
+              <span>{service.name} ({service.duration} min) — {service.price} kr</span>
             </div>
             <div className="flex items-center gap-3 text-zinc-300">
               <CalendarIcon className="w-4 h-4 text-red-500" />
