@@ -150,7 +150,11 @@ const BookingForm = ({ selectedService, onServiceChange }) => {
         phone: formData.phone || null,
         email: formData.email || null,
         date: format(selectedDate, "yyyy-MM-dd"),
-        time_slot: selectedTime
+        time_slot: selectedTime,
+        service_id: service.id,
+        service_name: service.name,
+        service_price: service.price,
+        service_duration: service.duration
       });
       
       setBookingConfirmed(response.data);
