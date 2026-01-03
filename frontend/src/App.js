@@ -170,6 +170,7 @@ const BookingForm = ({ selectedService, onServiceChange }) => {
     setSelectedTime(null);
     setFormData({ name: "", phone: "", email: "" });
     setBookingConfirmed(null);
+    onServiceChange(SERVICES[0].id);
   };
 
   // Disable past dates
@@ -178,6 +179,18 @@ const BookingForm = ({ selectedService, onServiceChange }) => {
   return (
     <div className="max-w-md mx-auto p-6 border border-zinc-800 bg-zinc-900/50 backdrop-blur-sm animate-fade-in">
       <StepIndicator currentStep={step} />
+
+      {/* Service selector */}
+      <div className="mb-6">
+        <p className="text-zinc-400 text-xs uppercase tracking-wider mb-2 text-center">Valgt tjeneste</p>
+        <div className="bg-zinc-800/50 p-3 border border-zinc-700 flex justify-between items-center">
+          <div>
+            <span className="text-zinc-50 font-medium">{service.name}</span>
+            <span className="text-zinc-500 text-sm ml-2">({service.duration} min)</span>
+          </div>
+          <span className="text-red-500 font-bold">{service.price} kr</span>
+        </div>
+      </div>
 
       {/* Step 1: Select Date */}
       {step === 1 && (
