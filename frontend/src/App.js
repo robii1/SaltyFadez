@@ -82,7 +82,7 @@ const TimeSlotButton = ({ time, available, selected, onClick }) => (
 );
 
 // Booking form component
-const BookingForm = () => {
+const BookingForm = ({ selectedService, onServiceChange }) => {
   const [step, setStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
@@ -95,6 +95,8 @@ const BookingForm = () => {
   });
   const [submitting, setSubmitting] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(null);
+
+  const service = SERVICES.find(s => s.id === selectedService) || SERVICES[0];
 
   // Fetch time slots when date is selected
   useEffect(() => {
