@@ -203,7 +203,7 @@ const AdminDashboard = ({ onLogout }) => {
     try {
       const dateStr = format(date, "yyyy-MM-dd");
       const response = await axios.get(`${API}/bookings?date=${dateStr}`);
-      setBookings(response.data);
+      setBookings(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Error fetching bookings:", error);
       toast.error("Kunne ikke laste bestillinger");
@@ -215,13 +215,14 @@ const AdminDashboard = ({ onLogout }) => {
   const fetchAllBookings = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API}/bookings`);
-      const sorted = response.data.sort((a, b) => {
-        const dateCompare = a.date.localeCompare(b.date);
-        if (dateCompare !== 0) return dateCompare;
-        return a.time_slot.localeCompare(b.time_slot);
-      });
-      setAllBookings(sorted);
+     const response = await axios.get(`${API}/bookings`);
+const arr = Array.isArray(response.data) ? response.data : [];
+const sorted = arr.slice().sort((a, b) => {
+  const dateCompare = a.date.localeCompare(b.date);
+  if (dateCompare !== 0) return dateCompare;
+  return a.time_slot.localeCompare(b.time_slot);
+});
+setAllBookings(sorted);
     } catch (error) {
       console.error("Error fetching bookings:", error);
       toast.error("Kunne ikke laste bestillinger");
@@ -255,7 +256,9 @@ const AdminDashboard = ({ onLogout }) => {
     onLogout();
   };
 
-  const displayBookings = viewMode === "date" ? bookings : allBookings;
+  const displayBookings = Array.isArray(viewMode === "date" ? bookings : allBookings)
+  ? (viewMode === "date" ? bookings : allBookings)
+  : [];
 
   const groupedBookings = viewMode === "all" 
     ? displayBookings.reduce((acc, booking) => {
