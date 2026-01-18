@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { Scissors, Calendar as CalendarIcon, Clock, Phone, Mail, Check, MapPin, Settings } from "lucide-react";
 import AdminPage from "@/AdminPage";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = process.env.REACT_APP_API_URL;
 const API = `${BACKEND_URL}/api`;
 
 // Services data
