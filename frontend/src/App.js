@@ -98,12 +98,13 @@ const BookingForm = ({ selectedService, onServiceChange }) => {
 
   const service = SERVICES.find(s => s.id === selectedService) || SERVICES[0];
 
-  // Fetch time slots when date is selected
-  useEffect(() => {
-    if (selectedDate) {
-      fetchTimeSlots(format(selectedDate, "yyyy-MM-dd"));
-    }
-  }, [selectedDate]);
+ // Fetch time slots when date is selected
+useEffect(() => {
+  if (!(selectedDate instanceof Date)) return;
+
+  const dateStr = format(selectedDate, "yyyy-MM-dd");
+  fetchTimeSlots(dateStr);
+}, [selectedDate]);
 
 const fetchTimeSlots = async (date) => {
   setLoadingSlots(true);
