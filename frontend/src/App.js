@@ -18,10 +18,11 @@ const API = `${BACKEND_URL}/api`;
 
 // Services data
 const SERVICES = [
-  { id: "fade", name: "VANLIG KLIPP (FADE)", price: 300, duration: 45, desc: "Moderne fade med presisjon" },
-  { id: "skjegg", name: "SKJEGG TRIM", price: 150, duration: 20, desc: "Rene linjer og forming" },
-  { id: "fade-skjegg", name: "KLIPP OG SKJEGG", price: 400, duration: 60, desc: "Komplett pakke" },
-  { id: "dame", name: "DAMEKLIPP", price: 300, duration: 45, desc: "Styling og klipp" }
+  { id: "fade-uten-topp", name: "FADE - UTEN TOPP", price: 300, duration: 25, desc: "Fade på sidene, toppen røres ikke" },
+  { id: "fade-med-topp", name: "FADE - MED TOPP", price: 350, duration: 30, desc: "Sidene og forming av toppen" },
+  { id: "sakseklipp", name: "SAKSEKLIPP", price: 300, duration: 30, desc: "Presis sakseklipp topp og sider" },
+  { id: "klipp-skjegg", name: "KLIPP OG SKJEGG", price: 400, duration: 45, desc: "Valgfri klipp og skjeggtrim og forming" },
+  { id: "lineup", name: "LINE UP", price: 150, duration: 15, desc: "Rene linjer rundt hårfeste og skjegg" }
 ];
 
 // Step indicator component
