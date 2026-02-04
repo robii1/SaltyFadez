@@ -403,11 +403,11 @@ const HeroSection = ({ onBookClick }) => (
     {/* Left: Text */}
     <div className="flex-1 flex flex-col justify-center p-6 md:p-12 lg:p-24">
       <h1 className="heading-font text-5xl sm:text-6xl lg:text-8xl text-zinc-50 mb-6">
-        SALTY<br />FADEZ
+        WEST<br />CUTZ
       </h1>
       <p className="text-zinc-400 text-base md:text-lg max-w-md mb-8">
         Premium fades med presisjon og stil. 
-        Bestill time på sekunder.
+        Se gjerne gjennom tjenestene og bestill det som passer deg.
       </p>
       <div className="flex flex-col sm:flex-row gap-4">
         <Button 
