@@ -127,7 +127,7 @@ async def send_booking_confirmation_email(booking: Booking):
     </head>
     <body style="font-family: Arial, sans-serif; background-color: #09090b; color: #fafafa; padding: 40px;">
         <div style="max-width: 500px; margin: 0 auto; background-color: #18181b; padding: 30px; border: 1px solid #27272a;">
-            <h1 style="font-size: 28px; margin: 0 0 20px 0; color: #fafafa;">SALTY FADEZ</h1>
+            <h1 style="font-size: 28px; margin: 0 0 20px 0; color: #fafafa;">West Cutz</h1>
             <h2 style="font-size: 20px; color: #dc2626; margin: 0 0 20px 0;">Bestilling bekreftet!</h2>
             
             <p style="color: #a1a1aa; margin-bottom: 20px;">Hei {booking.customer_name},</p>
@@ -151,7 +151,7 @@ async def send_booking_confirmation_email(booking: Booking):
             
             <hr style="border: none; border-top: 1px solid #27272a; margin: 30px 0;">
             <p style="color: #71717a; font-size: 12px; margin: 0;">
-                © 2025 Salty Fadez | Hans Blomgate 10, 6905 Florø
+                © 2025 WestCutz | Hans Blomgate 10, 6905 Florø
             </p>
         </div>
     </body>
