@@ -407,7 +407,7 @@ const HeroSection = ({ onBookClick }) => (
       </h1>
       <p className="text-zinc-400 text-base md:text-lg max-w-md mb-8">
         Premium fades med presisjon og stil. 
-        Se gjerne gjennom tjenestene og bestill det som passer deg.
+        Se gjennom tjenestene og bestill det som passer deg.
       </p>
       <div className="flex flex-col sm:flex-row gap-4">
         <Button 
@@ -535,7 +535,7 @@ const Home = () => {
       {/* Footer */}
       <footer className="py-8 px-6 border-t border-zinc-800">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-zinc-500 text-sm">© 2025 Salty Fadez. Alle rettigheter reservert.</p>
+          <p className="text-zinc-500 text-sm">© 2025 WestCutz. Alle rettigheter reservert.</p>
           <div className="flex items-center gap-6">
             <a 
               href="https://www.tiktok.com/@salty_fadez" 
