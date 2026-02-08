@@ -16,6 +16,12 @@ import AdminPage from "@/AdminPage";
 const BACKEND_URL = process.env.REACT_APP_API_URL;
 const API = `${BACKEND_URL}/api`;
 
+const BARBERS = [
+  { id: "marius", name: "Marius" },
+  { id: "sivert", name: "Sivert" }
+];
++
+
 // Services data
 const SERVICES = [
   { id: "fade-uten-topp", name: "FADE - UTEN TOPP", price: 300, duration: 25, desc: "Fade på sidene, toppen røres ikke" },
@@ -87,6 +93,7 @@ const BookingForm = ({ selectedService, onServiceChange }) => {
   const [step, setStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
+  const [selectedBarber, setSelectedBarber] = useState("marius");
   const [timeSlots, setTimeSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [formData, setFormData] = useState({
@@ -104,13 +111,13 @@ useEffect(() => {
   if (!(selectedDate instanceof Date)) return;
 
   const dateStr = format(selectedDate, "yyyy-MM-dd");
-  fetchTimeSlots(dateStr);
-}, [selectedDate]);
+fetchTimeSlots(dateStr, selectedBarber);
+}, [selectedDate, selectedBarber]);
 
-const fetchTimeSlots = async (date) => {
+const fetchTimeSlots = async (date, barberId) => {
   setLoadingSlots(true);
   try {
-    const response = await axios.get(`${API}/time-slots/${date}`);
+    const response = await axios.get(`${API}/time-slots/${date}`, { params: { barber_id: barberId } });
     const data = response.data;
 
     setTimeSlots(Array.isArray(data) ? data : []);
@@ -157,6 +164,8 @@ const fetchTimeSlots = async (date) => {
         customer_name: formData.name,
         phone: formData.phone || null,
         email: formData.email || null,
+        barber_id: selectedBarber,
+        barber_name: BARBERS.find(b => b.id === selectedBarber)?.name,
         date: format(selectedDate, "yyyy-MM-dd"),
         time_slot: selectedTime,
         service_id: service.id,
@@ -208,7 +217,27 @@ const fetchTimeSlots = async (date) => {
       {step === 1 && (
         <div className="space-y-4">
           <h3 className="heading-font text-xl text-center text-zinc-50 mb-6">VELG DATO</h3>
-          <div className="flex justify-center">
+              <div className="flex justify-center gap-2 mb-6" data-testid="barber-selector">
+            {BARBERS.map((b) => (
+              <button
+                key={b.id}
+                type="button"
+                onClick={() => {
+                  setSelectedBarber(b.id);
+                  setSelectedTime(null);
+                  if (selectedDate) setStep(2);
+                }}
+                className={`px-4 py-2 text-sm font-medium border transition-colors
+                  ${selectedBarber === b.id
+                    ? "bg-red-600 border-red-600 text-white"
+                    : "bg-transparent border-zinc-800 text-zinc-300 hover:border-zinc-600 hover:text-white"
+                  }`}
+              >
+                {b.name}
+              </button>
+            ))}
+          </div>
+        <div className="flex justify-center">
             <Calendar
               mode="single"
               selected={selectedDate}
@@ -236,7 +265,7 @@ const fetchTimeSlots = async (date) => {
           </div>
           
           <p className="text-zinc-400 text-center text-sm mb-4">
-            {selectedDate && format(selectedDate, "EEEE d. MMMM yyyy", { locale: nb })}
+            {selectedDate && format(selectedDate, "EEEE d. MMMM yyyy", { locale: nb })} • Frisør: {BARBERS.find(b => b.id === selectedBarber)?.name}}
           </p>
 
           {loadingSlots ? (
@@ -283,6 +312,9 @@ const fetchTimeSlots = async (date) => {
               <span>{selectedDate && format(selectedDate, "d. MMMM yyyy", { locale: nb })}</span>
               <Clock className="w-4 h-4 text-red-500 ml-4" />
               <span>{selectedTime}</span>
+              <Scissors className="w-4 h-4 text-red-500 ml-4" />
+              <span>Frisør: {BARBERS.find(b => b.id === selectedBarber)?.name}</span>
+             </div>
             </div>
             <p className="text-zinc-500 text-xs mt-2">
               {service.name} ({service.duration} min) | Pris: {service.price} kr
