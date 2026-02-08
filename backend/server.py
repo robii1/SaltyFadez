@@ -50,6 +50,8 @@ class BookingCreate(BaseModel):
     customer_name: str
     phone: Optional[str] = None
     email: Optional[EmailStr] = None
+    barber_id: str = "marius"  # marius | sivert
+    barber_name: Optional[str] = None  # optional, derived from barber_id if missing
     date: str  # Format: YYYY-MM-DD
     time_slot: str  # Format: HH:MM
     service_id: Optional[str] = "fade"
@@ -64,6 +66,8 @@ class Booking(BaseModel):
     customer_name: str
     phone: Optional[str] = None
     email: Optional[str] = None
+    barber_id: str = "marius"  # marius | siver
+    barber_name: Optional[str] = None  # optional, derived from barber_id if missing
     date: str
     time_slot: str
     service_id: str = "fade"
@@ -90,6 +94,12 @@ class VippsPaymentRequest(BaseModel):
 OPENING_HOUR = 9  # 9 AM
 CLOSING_HOUR = 18  # 6 PM
 SLOT_DURATION = 45  # minutes
+
+# Supported barbers (id -> display name)
+BARBERS = {
+    "marius": "Marius",
+    "sivert": "Sivert",
+}
 
 def generate_time_slots():
     """Generate all possible time slots for a day"""
@@ -137,6 +147,7 @@ async def send_booking_confirmation_email(booking: Booking):
                 <p style="margin: 0 0 10px 0; color: #fafafa;"><strong>Tjeneste:</strong> {booking.service_name} ({booking.service_duration} min)</p>
                 <p style="margin: 0 0 10px 0; color: #fafafa;"><strong>Dato:</strong> {formatted_date}</p>
                 <p style="margin: 0 0 10px 0; color: #fafafa;"><strong>Tid:</strong> {booking.time_slot}</p>
+                <strong>Frisør:</strong> {booking.barber_name or BARBERS.get(booking.barber_id, booking.barber_id)}<br>
                 <p style="margin: 0; color: #dc2626;"><strong>Pris:</strong> {booking.service_price} kr</p>
             </div>
             
@@ -187,7 +198,11 @@ def verify_admin(credentials: HTTPBasicCredentials = Depends(security)):
 
 @api_router.get("/")
 async def root():
-    return {"message": "Salty Fadez Booking API"}
+    return {"message": "WestCutz API"}
+    @api_router.get("/barbers")
+async def list_barbers():
+    """List supported barbers"""
+    return [{"id": bid, "name": name} for bid, name in BARBERS.items()]
 
 @api_router.post("/admin/login")
 async def admin_login(login: AdminLogin):
@@ -197,10 +212,11 @@ async def admin_login(login: AdminLogin):
     raise HTTPException(status_code=401, detail="Feil passord")
 
 @api_router.get("/time-slots/{date}", response_model=List[TimeSlot])
-async def get_available_time_slots(date: str):
+async def get_available_time_slots(date: str, barber_id: str = "marius"):
+
     """Get available time slots for a specific date"""
     existing_bookings = await db.bookings.find(
-        {"date": date, "status": {"$ne": "cancelled"}},
+        {"date": date, "status": {"$ne": "cancelled"}, "barber_id": barber_id},
         {"_id": 0, "time_slot": 1}
     ).to_list(100)
     
@@ -242,6 +258,7 @@ async def create_booking(booking_data: BookingCreate):
     existing = await db.bookings.find_one({
         "date": booking_data.date,
         "time_slot": booking_data.time_slot,
+        "barber_id": booking_data.barber_id,
         "status": {"$ne": "cancelled"}
     })
     
@@ -267,6 +284,8 @@ async def create_booking(booking_data: BookingCreate):
         customer_name=booking_data.customer_name,
         phone=booking_data.phone,
         email=booking_data.email,
+        barber_id=booking_data.barber_id,
+        barber_name=booking_data.barber_name or BARBERS.get(booking_data.barber_id, booking_data.barber_id),
         date=booking_data.date,
         time_slot=booking_data.time_slot,
         service_id=booking_data.service_id,
@@ -284,11 +303,13 @@ async def create_booking(booking_data: BookingCreate):
     return booking
 
 @api_router.get("/bookings", response_model=List[Booking])
-async def get_bookings(date: Optional[str] = None):
+async def get_bookings(date: Optional[str] = None, barber_id: Optional[str] = None):
     """Get all bookings, optionally filtered by date"""
     query = {"status": {"$ne": "cancelled"}}
     if date:
         query["date"] = date
+        if barber_id:
+            query["barber_id"] = barber_id
     
     bookings = await db.bookings.find(query, {"_id": 0}).to_list(1000)
     return bookings
