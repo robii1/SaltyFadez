@@ -26,6 +26,13 @@ import { Link } from "react-router-dom";
 const BACKEND_URL = process.env.REACT_APP_API_URL;
 const API = `${BACKEND_URL}/api`;
 
+const BARBERS = [
+  { id: "all", name: "Alle" },
+  { id: "marius", name: "Marius" },
+  { id: "sivert", name: "Sivert" }
+];
+
+
 // Login component
 const AdminLogin = ({ onLogin }) => {
   const [password, setPassword] = useState("");
@@ -197,6 +204,7 @@ const AdminDashboard = ({ onLogout }) => {
   const [allBookings, setAllBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState("date");
+  const [barberFilter, setBarberFilter] = useState("all");
 
   const fetchBookings = async (date) => {
     setLoading(true);
@@ -259,6 +267,9 @@ setAllBookings(sorted);
   const displayBookings = Array.isArray(viewMode === "date" ? bookings : allBookings)
   ? (viewMode === "date" ? bookings : allBookings)
   : [];
+  const filteredBookings = barberFilter === "all"
+    ? displayBookings
+    : displayBookings.filter(b => (b.barber_id || "marius") === barberFilter);
 
   const groupedBookings = viewMode === "all" 
     ? displayBookings.reduce((acc, booking) => {
@@ -287,7 +298,7 @@ setAllBookings(sorted);
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <h1 className="text-xl font-bold" style={{ fontFamily: 'Anton, sans-serif' }}>
-              SALTY FADEZ ADMIN
+              WESTCUTZ ADMIN
             </h1>
           </div>
           <div className="flex items-center gap-4">
@@ -309,6 +320,20 @@ setAllBookings(sorted);
               >
                 Alle
               </Button>
+            </div>
+                  <div className="flex items-center gap-2">
+         <label className="text-xs text-zinc-500" htmlFor="barber-filter">Frisør</label>
+              <select
+                id="barber-filter"
+                value={barberFilter}
+                onChange={(e) => setBarberFilter(e.target.value)}
+                className="bg-transparent border border-zinc-800 text-zinc-200 text-sm px-2 py-1 rounded-none"
+                data-testid="barber-filter"
+              >
+                {BARBERS.map(b => (
+                  <option key={b.id} value={b.id} className="bg-zinc-950">{b.name}</option>
+                ))}
+              </select>
             </div>
             <Button
               variant="ghost"
@@ -379,7 +404,7 @@ setAllBookings(sorted);
                 }
               </h2>
               <span className="text-zinc-500 text-sm">
-                {displayBookings.length} bestilling{displayBookings.length !== 1 ? "er" : ""}
+                {filteredBookings.length} bestilling{filteredBookings.length !== 1 ? "er" : ""}
               </span>
             </div>
 
@@ -387,14 +412,14 @@ setAllBookings(sorted);
               <div className="text-center py-12 text-zinc-500">
                 Laster bestillinger...
               </div>
-            ) : displayBookings.length === 0 ? (
+            ) : filteredBookings.length === 0 ? (
               <div className="text-center py-12 border border-zinc-800 border-dashed">
                 <Scissors className="w-8 h-8 mx-auto text-zinc-700 mb-2" />
                 <p className="text-zinc-500">Ingen bestillinger</p>
               </div>
             ) : viewMode === "date" ? (
               <div className="space-y-3" data-testid="bookings-list">
-                {displayBookings
+                {{filteredBookings
                   .sort((a, b) => a.time_slot.localeCompare(b.time_slot))
                   .map((booking) => (
                     <BookingCard 
