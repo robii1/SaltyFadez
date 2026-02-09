@@ -419,7 +419,7 @@ setAllBookings(sorted);
               </div>
             ) : viewMode === "date" ? (
               <div className="space-y-3" data-testid="bookings-list">
-                {{filteredBookings
+                {filteredBookings
                   .sort((a, b) => a.time_slot.localeCompare(b.time_slot))
                   .map((booking) => (
                     <BookingCard 
