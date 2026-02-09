@@ -264,7 +264,7 @@ const fetchTimeSlots = async (date, barberId) => {
           </div>
           
           <p className="text-zinc-400 text-center text-sm mb-4">
-            {selectedDate && format(selectedDate, "EEEE d. MMMM yyyy", { locale: nb })} • Frisør: {BARBERS.find(b => b.id === selectedBarber)?.name}}
+            {selectedDate && format(selectedDate, "EEEE d. MMMM yyyy", { locale: nb })} • Frisør: {BARBERS.find(b => b.id === selectedBarber)?.name}
           </p>
 
           {loadingSlots ? (
