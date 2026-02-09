@@ -20,7 +20,6 @@ const BARBERS = [
   { id: "marius", name: "Marius" },
   { id: "sivert", name: "Sivert" }
 ];
-+
 
 // Services data
 const SERVICES = [
