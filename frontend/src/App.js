@@ -314,7 +314,7 @@ const fetchTimeSlots = async (date, barberId) => {
               <Scissors className="w-4 h-4 text-red-500 ml-4" />
               <span>Frisør: {BARBERS.find(b => b.id === selectedBarber)?.name}</span>
              </div>
-            </div>
+          
             <p className="text-zinc-500 text-xs mt-2">
               {service.name} ({service.duration} min) | Pris: {service.price} kr
             </p>
