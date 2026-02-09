@@ -88,11 +88,10 @@ const TimeSlotButton = ({ time, available, selected, onClick }) => (
 );
 
 // Booking form component
-const BookingForm = ({ selectedService, onServiceChange }) => {
+const BookingForm = ({ selectedService, onServiceChange, selectedBarber }) => {
   const [step, setStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
-  const [selectedBarber, setSelectedBarber] = useState("marius");
   const [timeSlots, setTimeSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [formData, setFormData] = useState({
@@ -216,26 +215,6 @@ const fetchTimeSlots = async (date, barberId) => {
       {step === 1 && (
         <div className="space-y-4">
           <h3 className="heading-font text-xl text-center text-zinc-50 mb-6">VELG DATO</h3>
-              <div className="flex justify-center gap-2 mb-6" data-testid="barber-selector">
-            {BARBERS.map((b) => (
-              <button
-                key={b.id}
-                type="button"
-                onClick={() => {
-                  setSelectedBarber(b.id);
-                  setSelectedTime(null);
-                  if (selectedDate) setStep(2);
-                }}
-                className={`px-4 py-2 text-sm font-medium border transition-colors
-                  ${selectedBarber === b.id
-                    ? "bg-red-600 border-red-600 text-white"
-                    : "bg-transparent border-zinc-800 text-zinc-300 hover:border-zinc-600 hover:text-white"
-                  }`}
-              >
-                {b.name}
-              </button>
-            ))}
-          </div>
         <div className="flex justify-center">
             <Calendar
               mode="single"
@@ -429,7 +408,7 @@ const fetchTimeSlots = async (date, barberId) => {
 };
 
 // Hero section
-const HeroSection = ({ onBookClick }) => (
+const HeroSection = ({ onBookClick, selectedBarber, onBarberChange }) => (
   <section className="min-h-screen flex flex-col lg:flex-row">
     {/* Left: Text */}
     <div className="flex-1 flex flex-col justify-center p-6 md:p-12 lg:p-24">
@@ -440,23 +419,41 @@ const HeroSection = ({ onBookClick }) => (
         Premium fades med presisjon og stil. 
         Se gjennom tjenestene og bestill det som passer deg.
       </p>
-      <div className="flex flex-col sm:flex-row gap-4">
-        <Button 
-          onClick={onBookClick}
-          className="btn-sharp bg-red-600 hover:bg-red-700 text-white"
-          data-testid="book-now-btn"
-        >
-          <Scissors className="w-4 h-4 mr-2" />
-          BESTILL NÅ
-        </Button>
-        <Button 
-          variant="outline"
-          onClick={() => document.getElementById("services")?.scrollIntoView({ behavior: "smooth" })}
-          className="btn-sharp border-zinc-700 text-zinc-300 hover:bg-zinc-800"
-        >
-          SE TJENESTER
-        </Button>
-      </div>
+   <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+  <Button 
+    onClick={onBookClick}
+    className="btn-sharp bg-red-600 hover:bg-red-700 text-white"
+    data-testid="book-now-btn"
+  >
+    <Scissors className="w-4 h-4 mr-2" />
+    BESTILL NÅ
+  </Button>
+  <Button 
+    variant="outline"
+    onClick={() => document.getElementById("services")?.scrollIntoView({ behavior: "smooth" })}
+    className="btn-sharp border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+  >
+    SE TJENESTER
+  </Button>
+
+  <div className="flex gap-2">
+    {BARBERS.map((b) => (
+      <button
+        key={b.id}
+        type="button"
+        onClick={() => onBarberChange(b.id)}
+        className={`px-4 py-2 text-sm font-medium border transition-colors
+          ${selectedBarber === b.id
+            ? "bg-red-600 border-red-600 text-white"
+            : "bg-transparent border-zinc-800 text-zinc-300 hover:border-zinc-600 hover:text-white"
+          }`}
+      >
+        {b.name}
+      </button>
+    ))}
+  </div>
+</div>
+
       
       {/* Quick info */}
       <div className="flex flex-wrap gap-6 mt-12 text-zinc-400 text-sm">
@@ -532,7 +529,7 @@ const ServicesSection = ({ onServiceSelect }) => (
 );
 
 // Booking section
-const BookingSection = ({ selectedService, onServiceChange }) => (
+const BookingSection = ({ selectedService, onServiceChange, selectedBarber }) => (
   <section 
     id="booking"
     className="py-16 md:py-24 px-6 md:px-12 lg:px-24 border-t border-zinc-800"
@@ -540,13 +537,18 @@ const BookingSection = ({ selectedService, onServiceChange }) => (
     <h2 className="heading-font text-3xl md:text-4xl text-zinc-50 mb-12 text-center">
       BESTILL TIME
     </h2>
-    <BookingForm selectedService={selectedService} onServiceChange={onServiceChange} />
+    <BookingForm
+      selectedService={selectedService}
+      onServiceChange={onServiceChange}
+      selectedBarber={selectedBarber}
+    />
   </section>
 );
 
 // Main Home component
 const Home = () => {
   const [selectedService, setSelectedService] = useState(SERVICES[0].id);
+  const [selectedBarber, setSelectedBarber] = useState("marius");
 
   const handleServiceSelect = (serviceId) => {
     setSelectedService(serviceId);
@@ -559,9 +561,17 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-zinc-950 noise-overlay" data-testid="home-page">
-      <HeroSection onBookClick={scrollToBooking} />
+      <HeroSection
+  onBookClick={scrollToBooking}
+  selectedBarber={selectedBarber}
+  onBarberChange={setSelectedBarber}
+/>
       <ServicesSection onServiceSelect={handleServiceSelect} />
-      <BookingSection selectedService={selectedService} onServiceChange={setSelectedService} />
+     <BookingSection
+  selectedService={selectedService}
+  onServiceChange={setSelectedService}
+  selectedBarber={selectedBarber}
+/>
       
       {/* Footer */}
       <footer className="py-8 px-6 border-t border-zinc-800">
