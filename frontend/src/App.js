@@ -21,6 +21,38 @@ const BARBERS = [
   { id: "sivert", name: "Sivert" }
 ];
 
+const BARBER_CONFIG = {
+  marius: {
+    name: "Marius",
+    phoneDisplay: "453 92 948",
+    phoneTel: "45392948",
+    tiktokUrl: "https://www.tiktok.com/@salty_fadez", 
+    tiktokHandle: "@salty_fadez", 
+    // pris-overstyring per service (kr)
+    prices: {
+      "fade-uten-topp": 300,
+      "fade-med-topp": 350,
+      "sakseklipp": 300,
+      "klipp-skjegg": 400,
+      "lineup": 150,
+    },
+  },
+  sivert: {
+    name: "Sivert",
+    phoneDisplay: "___ __ ___", // bytt
+    phoneTel: "________",
+    tiktokUrl: "https://www.tiktok.com/@sivert_fadez", 
+    tiktokHandle: "@sivert_fadez",
+    prices: {
+      "fade-uten-topp": 250,  
+      "fade-med-topp": 300,
+      "sakseklipp": 250,
+      "klipp-skjegg": 350,
+      "lineup": 125,
+    },
+  },
+};
+
 // Services data
 const SERVICES = [
   { id: "fade-uten-topp", name: "FADE - UTEN TOPP", price: 300, duration: 25, desc: "Fade på sidene, toppen røres ikke" },
@@ -29,6 +61,14 @@ const SERVICES = [
   { id: "klipp-skjegg", name: "KLIPP OG SKJEGG", price: 400, duration: 45, desc: "Valgfri klipp og skjeggtrim og forming" },
   { id: "lineup", name: "LINE UP", price: 150, duration: 15, desc: "Rene linjer rundt hårfeste og skjegg" }
 ];
+
+const getServicesForBarber = (barberId) => {
+  const cfg = BARBER_CONFIG[barberId] || BARBER_CONFIG.marius;
+  return SERVICES.map((s) => ({
+    ...s,
+    price: cfg.prices?.[s.id] ?? s.price,
+  }));
+};
 
 // Step indicator component
 const StepIndicator = ({ currentStep }) => {
@@ -102,7 +142,9 @@ const BookingForm = ({ selectedService, onServiceChange, selectedBarber }) => {
   const [submitting, setSubmitting] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(null);
 
-  const service = SERVICES.find(s => s.id === selectedService) || SERVICES[0];
+  const servicesForBarber = getServicesForBarber(selectedBarber);
+const service = servicesForBarber.find(s => s.id === selectedService) || servicesForBarber[0];
+
 
  // Fetch time slots when date is selected
 useEffect(() => {
@@ -189,7 +231,7 @@ const fetchTimeSlots = async (date, barberId) => {
     setSelectedTime(null);
     setFormData({ name: "", phone: "", email: "" });
     setBookingConfirmed(null);
-    onServiceChange(SERVICES[0].id);
+    onServiceChange(servicesForBarber[0].id);
   };
 
   // Disable past dates
@@ -408,7 +450,7 @@ const fetchTimeSlots = async (date, barberId) => {
 };
 
 // Hero section
-const HeroSection = ({ onBookClick, selectedBarber, onBarberChange }) => (
+const HeroSection = ({ onBookClick, selectedBarber, onBarberChange, phoneDisplay }) => (
   <section className="min-h-screen flex flex-col lg:flex-row">
     {/* Left: Text */}
     <div className="flex-1 flex flex-col justify-center p-6 md:p-12 lg:p-24">
@@ -467,7 +509,8 @@ const HeroSection = ({ onBookClick, selectedBarber, onBarberChange }) => (
         </div>
         <div className="flex items-center gap-2">
           <Phone className="w-4 h-4 text-red-500" />
-          <span>453 92 948</span>
+          <span>{phoneDisplay}</span>
+
         </div>
       </div>
     </div>
@@ -485,26 +528,26 @@ const HeroSection = ({ onBookClick, selectedBarber, onBarberChange }) => (
 );
 
 // Services section
-const ServicesSection = ({ onServiceSelect }) => (
+const ServicesSection = ({ onServiceSelect, services, tiktokUrl, tiktokHandle }) => (
   <section id="services" className="py-16 md:py-24 px-6 md:px-12 lg:px-24 border-t border-zinc-800">
     <h2 className="heading-font text-3xl md:text-4xl text-zinc-50 mb-3 text-center">
       VÅRE TJENESTER
     </h2>
     <p className="text-center mb-12">
-      <a 
-        href="https://www.tiktok.com/@salty_fadez" 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 text-zinc-500 hover:text-red-500 transition-colors text-sm"
-      >
+     <a
+  href={tiktokUrl}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="inline-flex items-center gap-2 text-zinc-500 hover:text-red-500 transition-colors text-sm"
+>
         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
           <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
         </svg>
-        Se resultater på TikTok
+          Se resultater på TikTok ({tiktokHandle})
       </a>
     </p>
     <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
-      {SERVICES.map((service) => (
+      {services.map((service) => (
         <button
           key={service.id}
           onClick={() => onServiceSelect(service.id)}
@@ -549,6 +592,8 @@ const BookingSection = ({ selectedService, onServiceChange, selectedBarber }) =>
 const Home = () => {
   const [selectedService, setSelectedService] = useState(SERVICES[0].id);
   const [selectedBarber, setSelectedBarber] = useState("marius");
+  const barberCfg = BARBER_CONFIG[selectedBarber] || BARBER_CONFIG.marius;
+const servicesForBarber = getServicesForBarber(selectedBarber);
 
   const handleServiceSelect = (serviceId) => {
     setSelectedService(serviceId);
@@ -561,12 +606,18 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-zinc-950 noise-overlay" data-testid="home-page">
-      <HeroSection
+   <HeroSection
   onBookClick={scrollToBooking}
   selectedBarber={selectedBarber}
   onBarberChange={setSelectedBarber}
+  phoneDisplay={barberCfg.phoneDisplay}
 />
-      <ServicesSection onServiceSelect={handleServiceSelect} />
+      <ServicesSection
+  onServiceSelect={handleServiceSelect}
+  services={servicesForBarber}
+  tiktokUrl={barberCfg.tiktokUrl}
+  tiktokHandle={barberCfg.tiktokHandle}
+/>
      <BookingSection
   selectedService={selectedService}
   onServiceChange={setSelectedService}
@@ -579,7 +630,7 @@ const Home = () => {
           <p className="text-zinc-500 text-sm">© 2025 WestCutz. Alle rettigheter reservert.</p>
           <div className="flex items-center gap-6">
             <a 
-              href="https://www.tiktok.com/@salty_fadez" 
+              href={tiktokUrl}
               target="_blank" 
               rel="noopener noreferrer"
               className="text-zinc-400 hover:text-white transition-colors flex items-center gap-2"
@@ -588,14 +639,14 @@ const Home = () => {
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
               </svg>
-              <span className="text-sm">@salty_fadez</span>
+             <span className="text-sm">{tiktokHandle}</span>
             </a>
             <a 
-              href="tel:45392948" 
+              href={`tel:${barberCfg.phoneTel}`}
               className="text-zinc-400 hover:text-white transition-colors flex items-center gap-2"
             >
               <Phone className="w-4 h-4" />
-              <span className="text-sm">453 92 948</span>
+              <span className="text-sm">{barberCfg.phoneDisplay}</span>
             </a>
             <Link 
               to="/admin" 
