@@ -39,10 +39,10 @@ const BARBER_CONFIG = {
   },
   sivert: {
     name: "Sivert",
-    phoneDisplay: "___ __ ___", // bytt
-    phoneTel: "________",
-    tiktokUrl: "https://www.tiktok.com/@sivert_fadez", 
-    tiktokHandle: "@sivert_fadez",
+    phoneDisplay: "483 82 072", // bytt
+    phoneTel: "48382072",
+    tiktokUrl: "https://www.tiktok.com/@siverts_fadez", 
+    tiktokHandle: "@siverts_fadez",
     prices: {
       "fade-uten-topp": 250,  
       "fade-med-topp": 300,
