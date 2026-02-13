@@ -60,14 +60,20 @@ const SERVICES = [
   { id: "klipp-skjegg", name: "KLIPP OG SKJEGG", price: 400, duration: 45, desc: "Valgfri klipp og skjeggtrim og forming" },
   { id: "lineup", name: "LINE UP", price: 150, duration: 15, desc: "Rene linjer rundt hårfeste og skjegg" }
 ];
-
 const getServicesForBarber = (barberId) => {
   const cfg = BARBER_CONFIG[barberId] || BARBER_CONFIG.marius;
-  return SERVICES.map((s) => ({
+
+  // fjern sakseklipp for Sivert
+  const base = barberId === "sivert"
+    ? SERVICES.filter(s => s.id !== "sakseklipp")
+    : SERVICES;
+
+  return base.map((s) => ({
     ...s,
     price: cfg.prices?.[s.id] ?? s.price,
   }));
 };
+
 
 // Step indicator component
 const StepIndicator = ({ currentStep }) => {
