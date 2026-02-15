@@ -95,59 +95,90 @@ OPENING_HOUR = 9   # 09:00
 CLOSING_HOUR = 18  # 18:00
 SLOT_DURATION = 45  # minutes
 
-# Supported barbers (id -> display name)
-BARBERS = {
-    "marius": "Marius",
-    "sivert": "Sivert",
-}
-
 # Per-barber opening rules
 # weekday = Man–Fre, wednesday = Ons, weekend = Lør–Søn
 BARBER_HOURS = {
     "sivert": {
-        "weekday": (16, 21),
-        "wednesday": (14, 21),
-        "weekend": (OPENING_HOUR, CLOSING_HOUR),
+        "weekday": (16, 21),            # Man–Fre: 16–21
+        "wednesday": (14, 21),          # Ons: 14–21
+        "weekend": (OPENING_HOUR, CLOSING_HOUR),  # Lør–Søn: 09–18
     },
     "marius": {
-        "weekday": (OPENING_HOUR, 20),
-        "wednesday": (OPENING_HOUR, 20),
-        "weekend": (OPENING_HOUR, CLOSING_HOUR),
+        "weekday": (OPENING_HOUR, 20),  # Man–Fre: 09–20
+        "wednesday": (OPENING_HOUR, 20),# Ons: 09–20
+        "weekend": (OPENING_HOUR, CLOSING_HOUR),  # Lør–Søn: 09–18
     },
 }
 
 def get_open_close_hours(barber_id: str, date_str: str) -> tuple[int, int]:
-    """
-    Return (open_hour, close_hour) for barber and date (YYYY-MM-DD).
-    """
     barber_id = (barber_id or "marius").lower()
     cfg = BARBER_HOURS.get(barber_id, BARBER_HOURS["marius"])
 
     d = datetime.strptime(date_str, "%Y-%m-%d")
-    weekday = d.weekday()  # 0=Mon ... 6=Sun
+    wd = d.weekday()  # 0=Mon ... 6=Sun
 
-    if weekday >= 5:  # Sat/Sun
+    if wd >= 5:       # Sat/Sun
         return cfg["weekend"]
-    if weekday == 2:  # Wednesday
+    if wd == 2:       # Wednesday
         return cfg["wednesday"]
     return cfg["weekday"]
 
-def generate_time_slots(open_hour: int = OPENING_HOUR, close_hour: int = CLOSING_HOUR) -> list[str]:
+def generate_time_slots(open_hour: int, close_hour: int) -> list[str]:
     """
-    Generate all possible time slots for a day between open_hour and close_hour.
-    close_hour is the end time (not inclusive for starting a new slot).
+    Genererer start-tider i 45-min slots.
+    Regelen: siste start må ha plass til 45 min før close_hour.
+    Eks: open=16, close=21 => siste start 20:15.
     """
     slots: list[str] = []
     start = datetime(2000, 1, 1, open_hour, 0)
     end = datetime(2000, 1, 1, close_hour, 0)
-    delta = timedelta(minutes=SLOT_DURATION)
+    step = timedelta(minutes=SLOT_DURATION)
 
     current = start
-    while current + delta <= end:
+    while current + step <= end:
         slots.append(current.strftime("%H:%M"))
-        current += delta
+        current += step
 
     return slots
+
+@api_router.get("/time-slots/{date}", response_model=List[TimeSlot])
+async def get_available_time_slots(date: str, barber_id: str = "marius"):
+    """
+    Returnerer ledige tider for gitt dato og frisør.
+    """
+    # Validate date format
+    try:
+        booking_date = datetime.strptime(date, "%Y-%m-%d").date()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Ugyldig datoformat. Bruk YYYY-MM-DD")
+
+    # Hours per barber/day
+    open_h, close_h = get_open_close_hours(barber_id, date)
+    all_slots = generate_time_slots(open_h, close_h)
+
+    logger.info(f"time-slots: date={date} barber_id={barber_id} hours={open_h}-{close_h} slots={len(all_slots)}")
+
+    # Existing bookings for this barber/date
+    existing_bookings = await db.bookings.find(
+        {"date": date, "status": {"$ne": "cancelled"}, "barber_id": barber_id},
+        {"_id": 0, "time_slot": 1}
+    ).to_list(100)
+
+    booked_times = {b["time_slot"] for b in existing_bookings}
+
+    today = datetime.now(timezone.utc).date()
+
+    if booking_date < today:
+        return [TimeSlot(time=s, available=False) for s in all_slots]
+
+    if booking_date == today:
+        now_hhmm = datetime.now(timezone.utc).strftime("%H:%M")
+        return [
+            TimeSlot(time=s, available=(s not in booked_times and s > now_hhmm))
+            for s in all_slots
+        ]
+
+    return [TimeSlot(time=s, available=(s not in booked_times)) for s in all_slots]
 
 # Email sending function
 async def send_booking_confirmation_email(booking: Booking):
@@ -299,7 +330,7 @@ async def create_booking(booking_data: BookingCreate):
     except ValueError:
         raise HTTPException(status_code=400, detail="Ugyldig datoformat. Bruk YYYY-MM-DD")
 
-    # Validate time_slot is within barber/day allowed hours
+     # Validate time_slot is within barber/day allowed hours
     open_h, close_h = get_open_close_hours(booking_data.barber_id, booking_data.date)
     valid_slots = set(generate_time_slots(open_h, close_h))
     if booking_data.time_slot not in valid_slots:
