@@ -151,33 +151,35 @@ const BookingForm = ({ selectedService, onServiceChange, selectedBarber }) => {
 const service = servicesForBarber.find(s => s.id === selectedService) || servicesForBarber[0];
 
 
- // Fetch time slots when date is selected
+// Fetch time slots when date is selected
 useEffect(() => {
   if (!(selectedDate instanceof Date)) return;
 
   const dateStr = format(selectedDate, "yyyy-MM-dd");
-fetchTimeSlots(dateStr, selectedBarber);
+  fetchTimeSlots(dateStr, selectedBarber);
 }, [selectedDate, selectedBarber]);
 
 const fetchTimeSlots = async (date, barberId) => {
   setLoadingSlots(true);
   try {
-    const response = await axios.get(`${API}/time-slots/${date}`, { params: { barber_id: barberId } });
-    const data = response.data;
+    const response = await axios.get(`${API}/time-slots/${date}`, {
+      params: { barber_id: barberId },
+    });
 
+    const data = response.data;
     setTimeSlots(Array.isArray(data) ? data : []);
+
     if (!Array.isArray(data)) {
       console.error("Expected array from /time-slots, got:", data);
     }
   } catch (error) {
     console.error("Error fetching time slots:", error);
-    setTimeSlots([]); // <- viktig så .map aldri krasjer
+    setTimeSlots([]);
     toast.error("Kunne ikke laste ledige tider");
   } finally {
     setLoadingSlots(false);
   }
 };
-
   const handleDateSelect = (date) => {
     setSelectedDate(date);
     setSelectedTime(null);
