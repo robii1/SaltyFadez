@@ -291,6 +291,9 @@ const fetchTimeSlots = async (date, barberId) => {
           <p className="text-zinc-400 text-center text-sm mb-4">
             {selectedDate && format(selectedDate, "EEEE d. MMMM yyyy", { locale: nb })} • Frisør: {BARBERS.find(b => b.id === selectedBarber)?.name}
           </p>
+<p className="text-zinc-500 text-center text-xs mb-4">
+  Tidene er veiledende og kan variere avhengig av hårtype, lengde og ønsket resultat.
+</p>
 
           {loadingSlots ? (
             <div className="text-center text-zinc-400 py-8">Laster ledige tider...</div>
@@ -550,6 +553,9 @@ const ServicesSection = ({ onServiceSelect, services, tiktokUrl, tiktokHandle })
           Se resultater på TikTok ({tiktokHandle})
       </a>
     </p>
+  <p className="text-center text-xs text-zinc-500 mb-10">
+  Oppgitt tidsbruk er veiledende og kan variere basert på hårtype, lengde og ønsket resultat.
+</p>
     <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
       {services.map((service) => (
         <button
