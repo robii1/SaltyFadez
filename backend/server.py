@@ -462,6 +462,7 @@ app.add_middleware(
         "https://westcutz.netlify.app",
         "https://westcutz.no",
         "https://www.westcutz.no",
+        "http://localhost:3000",
     ],
     allow_methods=["*"],
     allow_headers=["*"],
