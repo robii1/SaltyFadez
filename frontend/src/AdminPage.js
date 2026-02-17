@@ -32,6 +32,23 @@ const BARBERS = [
   { id: "sivert", name: "Sivert" }
 ];
 
+const ABSENCE_KEY = "westcutz_absence_v1";
+
+const loadAbsence = () => {
+  try {
+    return JSON.parse(localStorage.getItem(ABSENCE_KEY) || "{}");
+  } catch {
+    return {};
+  }
+};
+
+const saveAbsence = (data) => {
+  localStorage.setItem(ABSENCE_KEY, JSON.stringify(data));
+};
+
+const isAbsent = (absence, barberId, dateStr) => {
+  return !!absence?.[barberId]?.[dateStr];
+};
 
 // Login component
 const AdminLogin = ({ onLogin }) => {
@@ -205,6 +222,38 @@ const AdminDashboard = ({ onLogout }) => {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState("date");
   const [barberFilter, setBarberFilter] = useState("all");
+  // --- Absence (frontend-only) ---
+  const [absence, setAbsence] = useState(loadAbsence());
+  const [absenceBarber, setAbsenceBarber] = useState("marius");
+  const [absenceDate, setAbsenceDate] = useState(new Date());
+
+  const toggleAbsence = () => {
+    if (!(absenceDate instanceof Date)) return;
+    const dateStr = format(absenceDate, "yyyy-MM-dd");
+
+    const next = { ...absence };
+    next[absenceBarber] = { ...(next[absenceBarber] || {}) };
+
+    if (next[absenceBarber][dateStr]) {
+      delete next[absenceBarber][dateStr];
+      toast.success("Fravær fjernet");
+    } else {
+      next[absenceBarber][dateStr] = true;
+      toast.success("Fravær registrert");
+    }
+
+    setAbsence(next);
+    saveAbsence(next);
+  };
+
+  const clearAbsenceDate = (barberId, dateStr) => {
+    const next = { ...absence };
+    next[barberId] = { ...(next[barberId] || {}) };
+    delete next[barberId][dateStr];
+    setAbsence(next);
+    saveAbsence(next);
+    toast.success("Fravær fjernet");
+  };
 
   const fetchBookings = async (date) => {
     setLoading(true);
@@ -373,26 +422,99 @@ setAllBookings(sorted);
 
         <div className="grid lg:grid-cols-[300px_1fr] gap-8">
           {/* Calendar sidebar */}
-          <div className="space-y-4">
-            <h2 className="text-sm text-zinc-400 uppercase tracking-wider">Velg Dato</h2>
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={handleDateSelect}
-              className="rounded-none border border-zinc-800"
-              data-testid="admin-calendar"
-            />
-            
-            <Button
-              variant="outline"
-              className="w-full rounded-none border-zinc-700"
-              onClick={() => viewMode === "date" ? fetchBookings(selectedDate) : fetchAllBookings()}
-              data-testid="refresh-btn"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Oppdater
-            </Button>
-          </div>
+       <div className="space-y-6">
+  {/* Kalender (eksisterende) */}
+  <div className="space-y-4">
+    <h2 className="text-sm text-zinc-400 uppercase tracking-wider">Velg Dato</h2>
+    <Calendar
+      mode="single"
+      selected={selectedDate}
+      onSelect={handleDateSelect}
+      className="rounded-none border border-zinc-800"
+      data-testid="admin-calendar"
+    />
+
+    <Button
+      variant="outline"
+      className="w-full rounded-none border-zinc-700"
+      onClick={() => viewMode === "date" ? fetchBookings(selectedDate) : fetchAllBookings()}
+      data-testid="refresh-btn"
+    >
+      <RefreshCw className="w-4 h-4 mr-2" />
+      Oppdater
+    </Button>
+  </div>
+
+  {/* Fravær (NY) */}
+  <div className="border border-zinc-800 bg-zinc-900/30 p-4 space-y-4">
+    <h2 className="text-sm text-zinc-400 uppercase tracking-wider">Fravær</h2>
+
+    <div className="flex gap-2">
+      {BARBERS.filter(b => b.id !== "all").map((b) => (
+        <button
+          key={b.id}
+          type="button"
+          onClick={() => setAbsenceBarber(b.id)}
+          className={`px-3 py-2 text-sm border transition-colors rounded-none
+            ${absenceBarber === b.id
+              ? "bg-red-600 border-red-600 text-white"
+              : "bg-transparent border-zinc-800 text-zinc-300 hover:border-zinc-600 hover:text-white"
+            }`}
+        >
+          {b.name}
+        </button>
+      ))}
+    </div>
+
+    <Calendar
+      mode="single"
+      selected={absenceDate}
+      onSelect={(d) => d && setAbsenceDate(d)}
+      className="rounded-none border border-zinc-800"
+      data-testid="absence-calendar"
+    />
+
+    <Button
+      onClick={toggleAbsence}
+      className="w-full rounded-none bg-red-600 hover:bg-red-700 text-white"
+      data-testid="toggle-absence-btn"
+    >
+      {absenceDate instanceof Date &&
+      isAbsent(absence, absenceBarber, format(absenceDate, "yyyy-MM-dd"))
+        ? "Fjern fravær"
+        : "Sett fravær"}
+    </Button>
+
+    <div className="pt-2">
+      <p className="text-zinc-500 text-xs uppercase tracking-wider mb-2">
+        Registrert fravær ({BARBERS.find(b => b.id === absenceBarber)?.name})
+      </p>
+
+      {Object.keys(absence?.[absenceBarber] || {}).length === 0 ? (
+        <p className="text-zinc-600 text-sm">Ingen fravær registrert.</p>
+      ) : (
+        <div className="space-y-2">
+          {Object.keys(absence[absenceBarber]).sort().map((d) => (
+            <div key={d} className="flex items-center justify-between border border-zinc-800 p-2">
+              <span className="text-zinc-300 text-sm">{d} — Fravær</span>
+              <button
+                type="button"
+                onClick={() => clearAbsenceDate(absenceBarber, d)}
+                className="text-sm text-red-500 hover:text-red-400"
+              >
+                Fjern
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+
+    <p className="text-zinc-600 text-xs">
+      Merk: Dette er kun admin/visning i frontend. 
+    </p>
+  </div>
+</div>
 
           {/* Bookings list */}
           <div className="space-y-4">
