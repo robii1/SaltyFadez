@@ -169,7 +169,20 @@ const BookingCard = ({ booking, onCancel }) => {
           <div className="flex items-center gap-2 text-zinc-50">
             <User className="w-4 h-4 text-red-500" />
             <span className="font-semibold">{booking.customer_name}</span>
-            {getPaymentBadge(booking.payment_status)}
+           {getPaymentBadge(booking.payment_status)}
+
+{booking.payment_status !== "paid" && (
+  <Button
+    size="sm"
+    variant="outline"
+    onClick={handleMarkPaid}
+    className="h-6 px-2 text-xs border-green-600 text-green-400 hover:bg-green-600/10"
+  >
+    <CreditCard className="w-3 h-3 mr-1" />
+    Betalt
+  </Button>
+)}
+
           </div>
           
           <div className="flex items-center gap-4 text-sm text-zinc-400">
@@ -307,6 +320,18 @@ setAllBookings(sorted);
     setBookings(bookings.filter(b => b.id !== bookingId));
     setAllBookings(allBookings.filter(b => b.id !== bookingId));
   };
+const handleMarkPaid = async () => {
+  try {
+    await axios.patch(`${API}/bookings/${booking.id}/payment`, {
+      payment_status: "paid"
+    });
+
+    toast.success("Markert som betalt");
+    window.location.reload(); // enkelt og trygt
+  } catch (error) {
+    toast.error("Kunne ikke oppdatere betaling");
+  }
+};
 
   const handleLogout = () => {
     localStorage.removeItem("admin_authenticated");
