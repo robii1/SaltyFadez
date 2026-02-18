@@ -151,37 +151,7 @@ const BookingCard = ({ booking, onCancel }) => {
     }
   };
 
-  const getPaymentBadge = (status) => {
-    switch (status) {
-      case "paid":
-        return <span className="text-xs bg-green-600/20 text-green-400 px-2 py-0.5">Betalt</span>;
-      case "failed":
-        return <span className="text-xs bg-red-600/20 text-red-400 px-2 py-0.5">Feilet</span>;
-      default:
-        return <span className="text-xs bg-yellow-600/20 text-yellow-400 px-2 py-0.5">Venter</span>;
-    }
-  };
-
-  return (
-    <div className="border border-zinc-800 bg-zinc-900/50 p-4 hover:border-zinc-700 transition-colors">
-      <div className="flex justify-between items-start">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-zinc-50">
-            <User className="w-4 h-4 text-red-500" />
-            <span className="font-semibold">{booking.customer_name}</span>
-           {getPaymentBadge(booking.payment_status)}
-
-{booking.payment_status !== "paid" && (
-  <Button
-    size="sm"
-    variant="outline"
-    onClick={handleMarkPaid}
-    className="h-6 px-2 text-xs border-green-600 text-green-400 hover:bg-green-600/10"
-  >
-    <CreditCard className="w-3 h-3 mr-1" />
-    Betalt
-  </Button>
-)}
+  const getPaymentBadge = (status) => {}
 
           </div>
           
@@ -320,18 +290,6 @@ setAllBookings(sorted);
     setBookings(bookings.filter(b => b.id !== bookingId));
     setAllBookings(allBookings.filter(b => b.id !== bookingId));
   };
-const handleMarkPaid = async () => {
-  try {
-    await axios.patch(`${API}/bookings/${booking.id}/payment`, {
-      payment_status: "paid"
-    });
-
-    toast.success("Markert som betalt");
-    window.location.reload(); // enkelt og trygt
-  } catch (error) {
-    toast.error("Kunne ikke oppdatere betaling");
-  }
-};
 
   const handleLogout = () => {
     localStorage.removeItem("admin_authenticated");
