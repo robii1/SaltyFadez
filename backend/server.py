@@ -133,11 +133,6 @@ def get_open_close_hours(barber_id: str, date_str: str) -> tuple[int, int]:
     return cfg["weekday"]
 
 def generate_time_slots(open_hour: int, close_hour: int) -> list[str]:
-    """
-    Genererer start-tider i 45-min slots.
-    Regelen: siste start må ha plass til 45 min før close_hour.
-    Eks: open=16, close=21 => siste start 20:15.
-    """
     slots: list[str] = []
     start = datetime(2000, 1, 1, open_hour, 0)
     end = datetime(2000, 1, 1, close_hour, 0)
@@ -150,34 +145,44 @@ def generate_time_slots(open_hour: int, close_hour: int) -> list[str]:
 
     return slots
 
+
 @api_router.get("/time-slots/{date}", response_model=List[TimeSlot])
 async def get_available_time_slots(date: str, barber_id: str = "marius"):
-    """
-    Returnerer ledige tider for gitt dato og frisør.
-    """
+
     # Validate date format
     try:
         booking_date = datetime.strptime(date, "%Y-%m-%d").date()
     except ValueError:
-        raise HTTPException(status_code=400, detail="Ugyldig datoformat. Bruk YYYY-MM-DD")
-        # Check absence
-absence = await db.absences.find_one({
-    "barber_id": barber_id,
-    "date": date
-})
+        raise HTTPException(
+            status_code=400,
+            detail="Ugyldig datoformat. Bruk YYYY-MM-DD"
+        )
 
-if absence:
-    return []
+    # Check absence
+    absence = await db.absences.find_one({
+        "barber_id": barber_id,
+        "date": date
+    })
+
+    if absence:
+        return []
 
     # Hours per barber/day
     open_h, close_h = get_open_close_hours(barber_id, date)
     all_slots = generate_time_slots(open_h, close_h)
 
-    logger.info(f"time-slots: date={date} barber_id={barber_id} hours={open_h}-{close_h} slots={len(all_slots)}")
+    logger.info(
+        f"time-slots: date={date} barber_id={barber_id} "
+        f"hours={open_h}-{close_h} slots={len(all_slots)}"
+    )
 
-    # Existing bookings for this barber/date
+    # Existing bookings
     existing_bookings = await db.bookings.find(
-        {"date": date, "status": {"$ne": "cancelled"}, "barber_id": barber_id},
+        {
+            "date": date,
+            "status": {"$ne": "cancelled"},
+            "barber_id": barber_id
+        },
         {"_id": 0, "time_slot": 1}
     ).to_list(100)
 
@@ -195,8 +200,10 @@ if absence:
             for s in all_slots
         ]
 
-    return [TimeSlot(time=s, available=(s not in booked_times)) for s in all_slots]
-
+    return [
+        TimeSlot(time=s, available=(s not in booked_times))
+        for s in all_slots
+    ]
 # Email sending function
 async def send_booking_confirmation_email(booking: Booking):
     """Send booking confirmation email"""
