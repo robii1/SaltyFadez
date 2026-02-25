@@ -89,7 +89,11 @@ class VippsPaymentRequest(BaseModel):
     booking_id: str
     amount: int = 300  # NOK
     phone_number: Optional[str] = None
-
+    
+class Absence(BaseModel):
+    barber_id: str
+    date: str  # YYYY-MM-DD
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 # Business hours configuration (default)
 OPENING_HOUR = 9   # 09:00
 CLOSING_HOUR = 18  # 18:00
@@ -151,6 +155,14 @@ async def get_available_time_slots(date: str, barber_id: str = "marius"):
         booking_date = datetime.strptime(date, "%Y-%m-%d").date()
     except ValueError:
         raise HTTPException(status_code=400, detail="Ugyldig datoformat. Bruk YYYY-MM-DD")
+        # Check absence
+absence = await db.absences.find_one({
+    "barber_id": barber_id,
+    "date": date
+})
+
+if absence:
+    return []
 
     # Hours per barber/day
     open_h, close_h = get_open_close_hours(barber_id, date)
@@ -280,7 +292,23 @@ async def admin_login(login: AdminLogin):
 @api_router.get("/time-slots/{date}", response_model=List[TimeSlot])
 async def get_available_time_slots(date: str, barber_id: str = "marius"):
     """Get available time slots for a specific date (per barber hours)."""
+@api_router.post("/admin/absence")
+async def toggle_absence(
+    data: Absence,
+    _: bool = Depends(verify_admin)
+):
+    existing = await db.absences.find_one({
+        "barber_id": data.barber_id,
+        "date": data.date
+    })
 
+    if existing:
+        await db.absences.delete_one({"_id": existing["_id"]})
+        return {"status": "removed"}
+    else:
+        await db.absences.insert_one(data.model_dump())
+        return {"status": "added"}
+        
     # Validate date format early
     try:
         booking_date = datetime.strptime(date, "%Y-%m-%d").date()
@@ -346,7 +374,15 @@ async def create_booking(booking_data: BookingCreate):
 
     if existing:
         raise HTTPException(status_code=400, detail="Denne tiden er allerede booket")
+        
+# Check absence
+absence = await db.absences.find_one({
+    "barber_id": booking_data.barber_id,
+    "date": booking_data.date
+})
 
+if absence:
+    raise HTTPException(status_code=400, detail="Frisøren er ikke tilgjengelig denne dagen")
     booking = Booking(
         customer_name=booking_data.customer_name,
         phone=booking_data.phone,
