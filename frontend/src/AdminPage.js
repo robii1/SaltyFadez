@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { format, addDays } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -146,14 +146,14 @@ const BookingCard = ({ booking, onCancel }) => {
 // =========================
 const AdminDashboard = ({ onLogout }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [daysToShow, setDaysToShow] = useState(3); // Vis 3 dager fremover
+  const [daysToShow, setDaysToShow] = useState(3);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterBarber, setFilterBarber] = useState("all");
   const [absenceBarber, setAbsenceBarber] = useState("marius");
   const [absenceDate, setAbsenceDate] = useState(new Date());
 
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     setLoading(true);
     try {
       let allBookings = [];
@@ -168,11 +168,11 @@ const AdminDashboard = ({ onLogout }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedDate, daysToShow]);
 
   useEffect(() => {
     fetchBookings();
-  }, [selectedDate, daysToShow]);
+  }, [fetchBookings]);
 
   const handleCancelBooking = (id) => {
     setBookings((prev) => prev.filter((b) => b.id !== id));
@@ -238,7 +238,6 @@ const AdminDashboard = ({ onLogout }) => {
             Sett / fjern fravær
           </Button>
 
-          {/* Velg antall dager som vises */}
           <div className="mt-4 space-y-1">
             <Label className="text-zinc-400 text-sm">Vis antall dager fremover</Label>
             <div className="flex gap-2">
