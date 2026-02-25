@@ -114,6 +114,11 @@ BARBER_HOURS = {
     },
 }
 
+BARBERS = {
+    "marius": "Marius",
+    "sivert": "Sivert"
+}
+
 def get_open_close_hours(barber_id: str, date_str: str) -> tuple[int, int]:
     barber_id = (barber_id or "marius").lower()
     cfg = BARBER_HOURS.get(barber_id, BARBER_HOURS["marius"])
@@ -289,9 +294,6 @@ async def admin_login(login: AdminLogin):
         return {"success": True, "message": "Innlogget"}
     raise HTTPException(status_code=401, detail="Feil passord")
 
-@api_router.get("/time-slots/{date}", response_model=List[TimeSlot])
-async def get_available_time_slots(date: str, barber_id: str = "marius"):
-    """Get available time slots for a specific date (per barber hours)."""
 @api_router.post("/admin/absence")
 async def toggle_absence(
     data: Absence,
@@ -345,11 +347,10 @@ async def toggle_absence(
 
 @api_router.post("/bookings", response_model=Booking)
 async def create_booking(booking_data: BookingCreate):
-    """Create a new booking"""
+
     if not booking_data.phone and not booking_data.email:
         raise HTTPException(status_code=400, detail="Vennligst oppgi telefon eller e-post")
 
-    # Validate date format and not in the past
     try:
         booking_date = datetime.strptime(booking_data.date, "%Y-%m-%d").date()
         today = datetime.now(timezone.utc).date()
@@ -358,13 +359,22 @@ async def create_booking(booking_data: BookingCreate):
     except ValueError:
         raise HTTPException(status_code=400, detail="Ugyldig datoformat. Bruk YYYY-MM-DD")
 
-     # Validate time_slot is within barber/day allowed hours
+    # Check absence
+    absence = await db.absences.find_one({
+        "barber_id": booking_data.barber_id,
+        "date": booking_data.date
+    })
+
+    if absence:
+        raise HTTPException(status_code=400, detail="Frisøren er ikke tilgjengelig denne dagen")
+
+    # Validate slot
     open_h, close_h = get_open_close_hours(booking_data.barber_id, booking_data.date)
     valid_slots = set(generate_time_slots(open_h, close_h))
-    if booking_data.time_slot not in valid_slots:
-        raise HTTPException(status_code=400, detail="Tiden er ikke tilgjengelig for valgt frisør/dato")
 
-    # Check if slot already booked
+    if booking_data.time_slot not in valid_slots:
+        raise HTTPException(status_code=400, detail="Tiden er ikke tilgjengelig")
+
     existing = await db.bookings.find_one({
         "date": booking_data.date,
         "time_slot": booking_data.time_slot,
@@ -374,21 +384,13 @@ async def create_booking(booking_data: BookingCreate):
 
     if existing:
         raise HTTPException(status_code=400, detail="Denne tiden er allerede booket")
-        
-# Check absence
-absence = await db.absences.find_one({
-    "barber_id": booking_data.barber_id,
-    "date": booking_data.date
-})
 
-if absence:
-    raise HTTPException(status_code=400, detail="Frisøren er ikke tilgjengelig denne dagen")
     booking = Booking(
         customer_name=booking_data.customer_name,
         phone=booking_data.phone,
         email=booking_data.email,
         barber_id=booking_data.barber_id,
-        barber_name=booking_data.barber_name or BARBERS.get(booking_data.barber_id, booking_data.barber_id),
+        barber_name=BARBERS.get(booking_data.barber_id, booking_data.barber_id),
         date=booking_data.date,
         time_slot=booking_data.time_slot,
         service_id=booking_data.service_id,
@@ -397,8 +399,7 @@ if absence:
         service_duration=booking_data.service_duration
     )
 
-    doc = booking.model_dump()
-    await db.bookings.insert_one(doc)
+    await db.bookings.insert_one(booking.model_dump())
 
     asyncio.create_task(send_booking_confirmation_email(booking))
 
