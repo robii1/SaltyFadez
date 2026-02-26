@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone, timedelta
+from fastapi.middleware.cors import CORSMiddleware
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -44,6 +45,22 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+# Include the router
+app.include_router(api_router)
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=[
+        "https://westcutz.netlify.app",
+        "https://westcutz.no",
+        "https://www.westcutz.no",
+        "http://localhost:3000",
+    ],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Define Models
 class BookingCreate(BaseModel):
@@ -495,22 +512,6 @@ async def get_vipps_status(booking_id: str):
         raise HTTPException(status_code=404, detail="Bestilling ikke funnet")
 
     return {"booking_id": booking_id, "payment_status": booking.get("payment_status", "pending")}
-
-# Include the router
-app.include_router(api_router)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=[
-        "https://westcutz.netlify.app",
-        "https://westcutz.no",
-        "https://www.westcutz.no",
-        "http://localhost:3000",
-    ],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
 @app.on_event("shutdown")
