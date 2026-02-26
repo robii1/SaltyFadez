@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { User, Trash2, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const BACKEND_URL = process.env.REACT_APP_API_URL;
+const BACKEND_URL = "https://westcutz.no"; 
 const API = `${BACKEND_URL}/api`;
 
 const BARBERS = [
