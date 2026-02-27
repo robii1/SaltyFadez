@@ -146,7 +146,7 @@ const BookingCard = ({ booking, onCancel }) => {
 // =========================
 const AdminDashboard = ({ onLogout }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [daysToShow, setDaysToShow] = useState(3);
+  const [daysToShow, setDaysToShow] = useState(7);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterBarber, setFilterBarber] = useState("all");
@@ -239,16 +239,21 @@ const AdminDashboard = ({ onLogout }) => {
           </Button>
 
           <div className="mt-4 space-y-1">
-            <Label className="text-zinc-400 text-sm">Vis antall dager fremover</Label>
-            <div className="flex gap-2">
-              {[1, 2, 3, 5, 7].map(n => (
+            <Label className="text-zinc-400 text-sm">Vis bookinger fremover</Label>
+            <div className="flex gap-2 flex-wrap">
+              {[
+                { days: 1, label: "1 dag" },
+                { days: 7, label: "1 uke" },
+                { days: 30, label: "1 mnd" },
+                { days: 90, label: "3 mnd" },
+              ].map(({ days, label }) => (
                 <button
-                  key={n}
-                  onClick={() => setDaysToShow(n)}
+                  key={days}
+                  onClick={() => setDaysToShow(days)}
                   className={`px-2 py-1 text-sm border rounded-none
-                    ${daysToShow === n ? "bg-red-600 border-red-600 text-white" : "bg-transparent border-zinc-800 text-zinc-300"}`}
+                    ${daysToShow === days ? "bg-red-600 border-red-600 text-white" : "bg-transparent border-zinc-800 text-zinc-300"}`}
                 >
-                  {n}
+                  {label}
                 </button>
               ))}
             </div>
@@ -258,7 +263,7 @@ const AdminDashboard = ({ onLogout }) => {
         {/* HØYRE: Bookinger */}
         <div>
           <h2 className="mb-4 flex items-center justify-between">
-            <span>Bookinger {daysToShow} dager fra {format(selectedDate, "d. MMM yyyy", { locale: nb })}</span>
+            <span>Bookinger {daysToShow === 1 ? "1 dag" : daysToShow === 7 ? "1 uke" : daysToShow === 30 ? "1 måned" : daysToShow === 90 ? "3 måneder" : `${daysToShow} dager`} fra {format(selectedDate, "d. MMM yyyy", { locale: nb })}</span>
             <div className="flex gap-2">
               {BARBERS.map(b => (
                 <button
