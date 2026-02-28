@@ -7,12 +7,13 @@ import os
 import logging
 import asyncio
 import secrets
-import resend
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict, EmailStr
+from pydantic import BaseModel, Field, EmailStr, ConfigDict
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone, timedelta
+import smtplib
+from email.message import EmailMessage
 
 # ----------------------------
 # Load environment variables
@@ -23,11 +24,13 @@ load_dotenv(ROOT_DIR / ".env")
 MONGO_URL = os.environ["MONGO_URL"]
 DB_NAME = os.environ["DB_NAME"]
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "saltyfadez2025")
-RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
-SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "onboarding@resend.dev")
 
-if RESEND_API_KEY:
-    resend.api_key = RESEND_API_KEY
+# SMTP settings
+SMTP_SERVER = os.environ.get("SMTP_SERVER")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", 587))
+SMTP_USER = os.environ.get("SMTP_USER")
+SMTP_PASS = os.environ.get("SMTP_PASS")
+SENDER_EMAIL = os.environ.get("SENDER_EMAIL", SMTP_USER)
 
 # ----------------------------
 # Database
@@ -71,29 +74,20 @@ app.add_middleware(
 # Barber configuration
 # ----------------------------
 BARBERS = {"marius": "Marius", "sivert": "Sivert"}
-
 OPENING_HOUR = 9
 CLOSING_HOUR = 18
 SLOT_DURATION = 45  # minutes
 
 BARBER_HOURS = {
-    "sivert": {
-        "weekday": (16, 21),
-        "wednesday": (14, 21),
-        "weekend": (OPENING_HOUR, CLOSING_HOUR),
-    },
-    "marius": {
-        "weekday": (OPENING_HOUR, 20),
-        "wednesday": (OPENING_HOUR, 20),
-        "weekend": (OPENING_HOUR, CLOSING_HOUR),
-    },
+    "sivert": {"weekday": (16, 21), "wednesday": (14, 21), "weekend": (OPENING_HOUR, CLOSING_HOUR)},
+    "marius": {"weekday": (OPENING_HOUR, 20), "wednesday": (OPENING_HOUR, 20), "weekend": (OPENING_HOUR, CLOSING_HOUR)},
 }
 
 def get_open_close_hours(barber_id: str, date_str: str) -> tuple[int, int]:
     barber_id = (barber_id or "marius").lower()
     cfg = BARBER_HOURS.get(barber_id, BARBER_HOURS["marius"])
     d = datetime.strptime(date_str, "%Y-%m-%d")
-    wd = d.weekday()  # 0=Mon ... 6=Sun
+    wd = d.weekday()
     if wd >= 5:
         return cfg["weekend"]
     if wd == 2:
@@ -168,19 +162,15 @@ class Absence(BaseModel):
 def verify_admin(credentials: HTTPBasicCredentials = Depends(security)):
     correct_password = secrets.compare_digest(credentials.password, ADMIN_PASSWORD)
     if not correct_password:
-        raise HTTPException(
-            status_code=401,
-            detail="Feil passord",
-            headers={"WWW-Authenticate": "Basic"},
-        )
+        raise HTTPException(status_code=401, detail="Feil passord", headers={"WWW-Authenticate": "Basic"})
     return True
 
 # ----------------------------
-# Email sending
+# Email sending via SMTP
 # ----------------------------
 async def send_booking_confirmation_email(booking: Booking):
-    if not booking.email or not RESEND_API_KEY:
-        logger.info(f"Skipping email: email={booking.email}, has_key={bool(RESEND_API_KEY)}")
+    if not booking.email:
+        logger.info(f"Skipping email: email={booking.email}")
         return None
 
     try:
@@ -191,15 +181,26 @@ async def send_booking_confirmation_email(booking: Booking):
 
     html_content = f"""
     <html><body>
-    Hei {booking.customer_name}, din time er bekreftet: {booking.date} kl. {booking.time_slot}
+    Hei {booking.customer_name}, din time er bekreftet: {formatted_date} kl. {booking.time_slot}<br>
+    Frisør: {booking.barber_name}<br>
+    Tjeneste: {booking.service_name} ({booking.service_duration} min)
     </body></html>
     """
-    params = {"from": SENDER_EMAIL, "to": [booking.email], "subject": "Bekreftelse", "html": html_content}
+
+    msg = EmailMessage()
+    msg["From"] = f"WestCutz <{SENDER_EMAIL}>"
+    msg["To"] = booking.email
+    msg["Subject"] = "Bekreftelse på booking"
+    msg.set_content(html_content, subtype="html")
+
     try:
-        await asyncio.to_thread(resend.Emails.send, params)
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASS)
+            server.send_message(msg)
         logger.info(f"Confirmation email sent to {booking.email}")
     except Exception as e:
-        logger.error(f"Failed to send email: {str(e)}")
+        logger.error(f"Failed to send email via SMTP: {str(e)}")
 
 # ----------------------------
 # API Endpoints
@@ -328,32 +329,6 @@ async def toggle_absence(data: Absence, _: bool = Depends(verify_admin)):
     else:
         await db.absences.insert_one(data.model_dump())
         return {"status": "added"}
-
-# Vipps placeholder
-@api_router.post("/vipps/initiate")
-async def initiate_vipps_payment(payment: VippsPaymentRequest):
-    booking = await db.bookings.find_one({"id": payment.booking_id}, {"_id": 0})
-    if not booking:
-        raise HTTPException(status_code=404, detail="Bestilling ikke funnet")
-    vipps_client_id = os.environ.get("VIPPS_CLIENT_ID")
-    if not vipps_client_id:
-        return {"status": "mock", "message": "Vipps ikke konfigurert", "booking_id": payment.booking_id, "amount": payment.amount}
-    return {"status": "pending", "booking_id": payment.booking_id, "amount": payment.amount}
-
-@api_router.post("/vipps/callback")
-async def vipps_callback(data: dict):
-    booking_id = data.get("reference")
-    status = data.get("status")
-    if booking_id and status == "SALE":
-        await db.bookings.update_one({"id": booking_id}, {"$set": {"payment_status": "paid"}})
-    return {"message": "Callback received"}
-
-@api_router.get("/vipps/status/{booking_id}")
-async def get_vipps_status(booking_id: str):
-    booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0, "payment_status": 1})
-    if not booking:
-        raise HTTPException(status_code=404, detail="Bestilling ikke funnet")
-    return {"booking_id": booking_id, "payment_status": booking.get("payment_status", "pending")}
 
 # ----------------------------
 # Include router at the END
