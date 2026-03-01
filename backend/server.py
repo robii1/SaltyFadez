@@ -12,8 +12,7 @@ from pydantic import BaseModel, Field, EmailStr, ConfigDict
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone, timedelta
-import smtplib
-from email.message import EmailMessage
+from resend import Resend
 
 # ----------------------------
 # Load environment variables
@@ -24,13 +23,8 @@ load_dotenv(ROOT_DIR / ".env")
 MONGO_URL = os.environ["MONGO_URL"]
 DB_NAME = os.environ["DB_NAME"]
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "saltyfadez2025")
-
-# SMTP settings
-SMTP_SERVER = os.environ.get("SMTP_SERVER")
-SMTP_PORT = int(os.environ.get("SMTP_PORT", 587))
-SMTP_USER = os.environ.get("SMTP_USER")
-SMTP_PASS = os.environ.get("SMTP_PASS")
-SENDER_EMAIL = os.environ.get("SENDER_EMAIL", SMTP_USER)
+SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "booking@westcutz.no")
+RESEND_API_KEY = os.environ["RESEND_API_KEY"]
 
 # ----------------------------
 # Database
@@ -166,13 +160,14 @@ def verify_admin(credentials: HTTPBasicCredentials = Depends(security)):
     return True
 
 # ----------------------------
-# Email sending via SMTP
+# Email sending via Resend API
 # ----------------------------
+resend_client = Resend(RESEND_API_KEY)
+
 async def send_booking_confirmation_email(booking: Booking):
     if not booking.email:
         logger.info(f"Skipping email: email={booking.email}")
         return None
-
     try:
         date_obj = datetime.strptime(booking.date, "%Y-%m-%d")
         formatted_date = date_obj.strftime("%d. %B %Y")
@@ -186,21 +181,16 @@ async def send_booking_confirmation_email(booking: Booking):
     Tjeneste: {booking.service_name} ({booking.service_duration} min)
     </body></html>
     """
-
-    msg = EmailMessage()
-    msg["From"] = f"WestCutz <{SENDER_EMAIL}>"
-    msg["To"] = booking.email
-    msg["Subject"] = "Bekreftelse på booking"
-    msg.set_content(html_content, subtype="html")
-
     try:
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()
-            server.login(SMTP_USER, SMTP_PASS)
-            server.send_message(msg)
+        resend_client.emails.send(
+            from_email=SENDER_EMAIL,
+            to=[booking.email],
+            subject="Bekreftelse på booking",
+            html=html_content
+        )
         logger.info(f"Confirmation email sent to {booking.email}")
     except Exception as e:
-        logger.error(f"Failed to send email via SMTP: {str(e)}")
+        logger.error(f"Failed to send email via Resend: {str(e)}")
 
 # ----------------------------
 # API Endpoints
