@@ -7,12 +7,12 @@ import os
 import logging
 import asyncio
 import secrets
+import resend
 from pathlib import Path
-from pydantic import BaseModel, Field, EmailStr, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone, timedelta
-from resend import Resend
 
 # ----------------------------
 # Load environment variables
@@ -24,7 +24,9 @@ MONGO_URL = os.environ["MONGO_URL"]
 DB_NAME = os.environ["DB_NAME"]
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "saltyfadez2025")
 SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "booking@westcutz.no")
-RESEND_API_KEY = os.environ["RESEND_API_KEY"]
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
+if RESEND_API_KEY:
+    resend.api_key = RESEND_API_KEY
 
 # ----------------------------
 # Database
@@ -108,8 +110,8 @@ class BookingCreate(BaseModel):
     email: Optional[EmailStr] = None
     barber_id: str = "marius"
     barber_name: Optional[str] = None
-    date: str  # YYYY-MM-DD
-    time_slot: str  # HH:MM
+    date: str
+    time_slot: str
     service_id: Optional[str] = "fade"
     service_name: Optional[str] = "VANLIG KLIPP (FADE)"
     service_price: Optional[int] = 300
@@ -160,10 +162,8 @@ def verify_admin(credentials: HTTPBasicCredentials = Depends(security)):
     return True
 
 # ----------------------------
-# Email sending via Resend API
+# Email sending via Resend (legacy method)
 # ----------------------------
-resend_client = Resend(RESEND_API_KEY)
-
 async def send_booking_confirmation_email(booking: Booking):
     if not booking.email:
         logger.info(f"Skipping email: email={booking.email}")
@@ -182,7 +182,7 @@ async def send_booking_confirmation_email(booking: Booking):
     </body></html>
     """
     try:
-        resend_client.emails.send(
+        resend.emails.send(
             from_email=SENDER_EMAIL,
             to=[booking.email],
             subject="Bekreftelse på booking",
