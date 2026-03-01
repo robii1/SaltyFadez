@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field, EmailStr, ConfigDict
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone, timedelta
-from resend import Resend
+from resend.resend import Resend
 
 # ----------------------------
 # Load environment variables
