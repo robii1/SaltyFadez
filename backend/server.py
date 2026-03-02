@@ -162,12 +162,13 @@ def verify_admin(credentials: HTTPBasicCredentials = Depends(security)):
     return True
 
 # ----------------------------
-# Email sending via Resend (legacy method)
+# Email sending via Resend (YouTube method)
 # ----------------------------
 async def send_booking_confirmation_email(booking: Booking):
     if not booking.email:
-        logger.info(f"Skipping email: email={booking.email}")
-        return None
+        logger.info("Skipping email: no email provided")
+        return
+
     try:
         date_obj = datetime.strptime(booking.date, "%Y-%m-%d")
         formatted_date = date_obj.strftime("%d. %B %Y")
@@ -175,22 +176,34 @@ async def send_booking_confirmation_email(booking: Booking):
         formatted_date = booking.date
 
     html_content = f"""
-    <html><body>
-    Hei {booking.customer_name}, din time er bekreftet: {formatted_date} kl. {booking.time_slot}<br>
-    Frisør: {booking.barber_name}<br>
-    Tjeneste: {booking.service_name} ({booking.service_duration} min)
-    </body></html>
+    <html>
+      <body>
+        <h2>Booking bekreftet</h2>
+        <p>Hei {booking.customer_name},</p>
+        <p>Din time er bekreftet.</p>
+        <ul>
+          <li><strong>Dato:</strong> {formatted_date}</li>
+          <li><strong>Tid:</strong> {booking.time_slot}</li>
+          <li><strong>Frisør:</strong> {booking.barber_name}</li>
+          <li><strong>Tjeneste:</strong> {booking.service_name} ({booking.service_duration} min)</li>
+        </ul>
+        <p>Velkommen til WestCutz ✂️</p>
+      </body>
+    </html>
     """
+
     try:
-        resend.emails.send(
-            from_email=SENDER_EMAIL,
-            to=[booking.email],
-            subject="Bekreftelse på booking",
-            html=html_content
-        )
-        logger.info(f"Confirmation email sent to {booking.email}")
+        response = resend.Emails.send({
+            "from": SENDER_EMAIL,
+            "to": [booking.email],
+            "subject": "Bekreftelse på booking – WestCutz",
+            "html": html_content,
+        })
+
+        logger.info(f"Resend response: {response}")
+
     except Exception as e:
-        logger.error(f"Failed to send email via Resend: {str(e)}")
+        logger.exception("Resend email failed")
 
 # ----------------------------
 # API Endpoints
