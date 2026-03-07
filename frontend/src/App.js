@@ -634,6 +634,29 @@ const servicesForBarber = getServicesForBarber(selectedBarber);
   selectedBarber={selectedBarber}
 />
       
+      {/* Map Section */}
+      <section className="relative border-t border-zinc-800">
+        <div className="max-w-5xl mx-auto px-6 py-12">
+          <div className="flex items-center gap-3 mb-6">
+            <MapPin className="w-5 h-5 text-red-500" />
+            <h2 className="heading-font text-2xl text-white">FINN OSS</h2>
+          </div>
+          <p className="text-zinc-400 text-sm mb-6">Hans Blomgate 10, 6905 Florø</p>
+        </div>
+        <div className="map-dark w-full h-[400px] overflow-hidden">
+          <iframe
+            title="WestCutz lokasjon"
+            src="https://www.google.com/maps?q=Hans+Blomgate+10,+6905+Florø,+Norway&output=embed"
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            allowFullScreen=""
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="py-8 px-6 border-t border-zinc-800">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">

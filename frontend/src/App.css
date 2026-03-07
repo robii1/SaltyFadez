@@ -75,6 +75,15 @@
     animation: fadeIn 0.3s ease-out forwards;
 }
 
+/* Dark map section */
+.map-dark iframe {
+    filter: invert(90%) hue-rotate(180deg) brightness(0.8) contrast(1.2);
+}
+
+.map-dark:hover iframe {
+    filter: invert(90%) hue-rotate(180deg) brightness(0.9) contrast(1.2);
+}
+
 /* Noise texture overlay (subtle) */
 .noise-overlay::before {
     content: '';
