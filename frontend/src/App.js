@@ -605,6 +605,13 @@ const Home = () => {
   const barberCfg = BARBER_CONFIG[selectedBarber] || BARBER_CONFIG.marius;
 const servicesForBarber = getServicesForBarber(selectedBarber);
 
+  // Track visit once per session
+  useEffect(() => {
+    if (sessionStorage.getItem("visited")) return;
+    sessionStorage.setItem("visited", "1");
+    fetch("/api/track-visit", { method: "POST" }).catch(() => {});
+  }, []);
+
   const handleServiceSelect = (serviceId) => {
     setSelectedService(serviceId);
     document.getElementById("booking")?.scrollIntoView({ behavior: "smooth" });
