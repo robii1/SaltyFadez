@@ -434,13 +434,18 @@ const fetchTimeSlots = async (date, barberId) => {
           </div>
 
           <p className="text-zinc-400 text-sm">
-            {bookingConfirmed.email 
+            {bookingConfirmed.email
               ? `Bekreftelse sendt til ${bookingConfirmed.email}`
-              : bookingConfirmed.phone 
+              : bookingConfirmed.phone
               ? `Vi sender SMS til ${bookingConfirmed.phone}`
               : "Vi sees!"
             }
           </p>
+          {bookingConfirmed.email && (
+            <p className="text-zinc-500 text-xs">
+              Sjekk søppelpost/spam-mappen hvis du ikke finner e-posten i innboksen.
+            </p>
+          )}
 
           <Button
             onClick={resetBooking}
