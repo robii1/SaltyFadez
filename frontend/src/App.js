@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { Scissors, Calendar as CalendarIcon, Clock, Phone, Mail, Check, MapPin, Settings } from "lucide-react";
+import { Scissors, Calendar as CalendarIcon, Clock, Phone, Mail, Check, MapPin, Settings, MessageCircle } from "lucide-react";
 import AdminPage from "@/AdminPage";
 
 const BACKEND_URL = process.env.REACT_APP_API_URL;
@@ -524,6 +524,15 @@ const HeroSection = ({ onBookClick, selectedBarber, onBarberChange, phoneDisplay
           <span>{phoneDisplay}</span>
 
         </div>
+        <a
+          href="https://m.me/970287886175492"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 text-zinc-400 hover:text-red-500 transition-colors"
+        >
+          <MessageCircle className="w-4 h-4 text-red-500" />
+          <span>Chat med oss</span>
+        </a>
       </div>
     </div>
 
@@ -686,7 +695,19 @@ const servicesForBarber = getServicesForBarber(selectedBarber);
               </svg>
                <span className="text-sm">{barberCfg.tiktokHandle}</span>
             </a>
-            <a 
+            <a
+              href="https://www.facebook.com/profile.php?id=61588135007811"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-zinc-400 hover:text-white transition-colors flex items-center gap-2"
+              data-testid="facebook-link"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+              <span className="text-sm">Facebook</span>
+            </a>
+            <a
               href={`tel:${barberCfg.phoneTel}`}
               className="text-zinc-400 hover:text-white transition-colors flex items-center gap-2"
             >
