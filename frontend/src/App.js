@@ -46,6 +46,7 @@ const BARBER_CONFIG = {
     prices: {
       "fade-uten-topp": 250,  
       "fade-med-topp": 300,
+      "sakseklipp": 300,
       "klipp-skjegg": 350,
       "lineup": 125,
     },
