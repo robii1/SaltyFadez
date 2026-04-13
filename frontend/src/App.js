@@ -64,12 +64,7 @@ const SERVICES = [
 const getServicesForBarber = (barberId) => {
   const cfg = BARBER_CONFIG[barberId] || BARBER_CONFIG.marius;
 
-  // fjern sakseklipp for Sivert
-  const base = barberId === "sivert"
-    ? SERVICES.filter(s => s.id !== "sakseklipp")
-    : SERVICES;
-
-  return base.map((s) => ({
+  return SERVICES.map((s) => ({
     ...s,
     price: cfg.prices?.[s.id] ?? s.price,
   }));
