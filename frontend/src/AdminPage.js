@@ -266,7 +266,7 @@ const AdminDashboard = ({ onLogout }) => {
          }, {
         auth: {
           username: "admin",
-          password: prompt("Admin passord"),
+          password: prompt('Skriv "saltyfadez2025" for å bekrefte at du vil sette fravær'),
         },
        });
       toast.success("Fravær oppdatert");
