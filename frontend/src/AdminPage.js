@@ -263,11 +263,6 @@ const AdminDashboard = ({ onLogout }) => {
       await axios.post(`${API}/admin/absence`, {
         barber_id: absenceBarber,
         date: format(absenceDate, "yyyy-MM-dd"),
-      }, {
-        auth: {
-          username: "admin",
-          password: prompt("Admin passord"),
-        },
       });
       toast.success("Fravær oppdatert");
     } catch {
