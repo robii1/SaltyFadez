@@ -75,20 +75,34 @@ CLOSING_HOUR = 18
 SLOT_DURATION = 45  # minutes
 
 BARBER_HOURS = {
-    "sivert": {"weekday": (16, 21), "wednesday": (14, 21), "weekend": (OPENING_HOUR, CLOSING_HOUR)},
-    "marius": {"weekday": (OPENING_HOUR, 20), "wednesday": (OPENING_HOUR, 20), "weekend": (OPENING_HOUR, CLOSING_HOUR)},
+    "sivert": {
+        0: (16, 21),
+        1: (16, 21),
+        2: (14, 21),
+        3: (10, 21),  # torsdag starter 10
+        4: (10, 21),  # fredag starter 10
+        5: (OPENING_HOUR, CLOSING_HOUR),
+        6: (OPENING_HOUR, CLOSING_HOUR),
+    },
+    "marius": {
+        0: (OPENING_HOUR, 20),
+        1: (OPENING_HOUR, 20),
+        2: (OPENING_HOUR, 20),
+        3: (OPENING_HOUR, 20),
+        4: (OPENING_HOUR, 20),
+        5: (OPENING_HOUR, CLOSING_HOUR),
+        6: (OPENING_HOUR, CLOSING_HOUR),
+    },
 }
 
 def get_open_close_hours(barber_id: str, date_str: str) -> tuple[int, int]:
     barber_id = (barber_id or "marius").lower()
     cfg = BARBER_HOURS.get(barber_id, BARBER_HOURS["marius"])
+
     d = datetime.strptime(date_str, "%Y-%m-%d")
-    wd = d.weekday()
-    if wd >= 5:
-        return cfg["weekend"]
-    if wd == 2:
-        return cfg["wednesday"]
-    return cfg["weekday"]
+    weekday = d.weekday()
+
+    return cfg.get(weekday, (OPENING_HOUR, CLOSING_HOUR))
 
 def generate_time_slots(open_hour: int, close_hour: int) -> list[str]:
     slots: list[str] = []
