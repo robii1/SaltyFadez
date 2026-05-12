@@ -75,35 +75,27 @@ CLOSING_HOUR = 18
 SLOT_DURATION = 45  # minutes
 
 BARBER_HOURS = {
-	    "sivert": {"weekday": (16, 21), "wednesday": (14, 21), "weekend": (OPENING_HOUR, CLOSING_HOUR)},
-	    "marius": {"weekday": (OPENING_HOUR, 20), "wednesday": (OPENING_HOUR, 20), "weekend": (OPENING_HOUR, CLOSING_HOUR)},
-	}
-	
-# Date-specific hour overrides: (barber_id, "YYYY-MM-DD") -> (open_hour, close_hour)
-SPECIAL_HOURS: dict[tuple[str, str], tuple[int, int]] = {
-("sivert", "2026-05-14"): (10, 21),  # Thursday
-("sivert", "2026-05-15"): (10, 21),  # Friday
+    "sivert": {"weekday": (16, 21), "wednesday": (14, 21), "weekend": (OPENING_HOUR, CLOSING_HOUR)},
+    "marius": {"weekday": (OPENING_HOUR, 20), "wednesday": (OPENING_HOUR, 20), "weekend": (OPENING_HOUR, CLOSING_HOUR)},
 }
 
 def get_open_close_hours(barber_id: str, date_str: str) -> tuple[int, int]:
- barber_id = (barber_id or "marius").lower()
-if (barber_id, date_str) in SPECIAL_HOURS:
- return SPECIAL_HOURS[(barber_id, date_str)]
- cfg = BARBER_HOURS.get(barber_id, BARBER_HOURS["marius"])
- d = datetime.strptime(date_str, "%Y-%m-%d")
-wd = d.weekday()
- if wd >= 5:
-   return cfg["weekend"]
-if wd == 2:
-  return cfg["wednesday"]
- return cfg["weekday"]
+    barber_id = (barber_id or "marius").lower()
+    cfg = BARBER_HOURS.get(barber_id, BARBER_HOURS["marius"])
+    d = datetime.strptime(date_str, "%Y-%m-%d")
+    wd = d.weekday()
+    if wd >= 5:
+        return cfg["weekend"]
+    if wd == 2:
+        return cfg["wednesday"]
+    return cfg["weekday"]
 
-	def generate_time_slots(open_hour: int, close_hour: int) -> list[str]:
-	    slots: list[str] = []
-	    start = datetime(2000, 1, 1, open_hour, 0)
-	    end = datetime(2000, 1, 1, close_hour, 0)
-	    step = timedelta(minutes=SLOT_DURATION)
-	    current = start
+def generate_time_slots(open_hour: int, close_hour: int) -> list[str]:
+    slots: list[str] = []
+    start = datetime(2000, 1, 1, open_hour, 0)
+    end = datetime(2000, 1, 1, close_hour, 0)
+    step = timedelta(minutes=SLOT_DURATION)
+    current = start
     while current + step <= end:
         slots.append(current.strftime("%H:%M"))
         current += step
