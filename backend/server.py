@@ -76,9 +76,9 @@ SLOT_DURATION = 45  # minutes
 
 BARBER_HOURS = {
     "sivert": {
-        0: (16, 21),
-        1: (16, 21),
-        2: (14, 21),
+        0: (10, 21),
+        1: (10, 21),
+        2: (10, 21),
         3: (10, 21),  # torsdag starter 10
         4: (10, 21),  # fredag starter 10
         5: (OPENING_HOUR, CLOSING_HOUR),
